@@ -1,30 +1,42 @@
 <template>
-  <div id="nav">
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link>
-  </div>
-  <router-view/>
+  <Renderer ref="renderer" resize="window">
+    <Camera :position="{ z: 1 }" />
+    <Scene>
+      <RouterView />
+    </Scene>
+     <EffectComposer>
+      <RenderPass />
+      <FXAAPass />
+    </EffectComposer>
+  </Renderer>
 </template>
 
+<script>
+import { defineComponent } from 'vue'
+import { initGame, initPointer } from './store'
+
+export default defineComponent({
+  setup () {
+    initPointer()
+
+    return initGame()
+  }
+})
+</script>
+
 <style lang="scss">
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
+body {
+  margin: 0;
+  overflow: hidden;
 }
 
-#nav {
-  padding: 30px;
-
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-
-    &.router-link-exact-active {
-      color: #42b983;
-    }
+#app {
+  & > canvas {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
   }
 }
 </style>
