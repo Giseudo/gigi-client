@@ -3,6 +3,11 @@ import { createRouter, createWebHistory } from 'vue-router'
 const routes = [
   {
     path: '/',
+    name: 'Cloud',
+    component: () => import('../scenes/Cloud.vue')
+  },
+  {
+    path: '/playground',
     name: 'Playground',
     component: () => import('../scenes/Playground.vue')
   }

@@ -1,6 +1,6 @@
 <template>
   <Renderer ref="renderer" resize="window">
-    <Camera :position="{ z: 1 }" />
+    <Camera />
     <Scene>
       <RouterView />
     </Scene>
@@ -13,11 +13,12 @@
 
 <script>
 import { defineComponent } from 'vue'
-import { initGame, initPointer } from './store'
+import { initGame, initPointer, initWindow } from './store'
 
 export default defineComponent({
   setup () {
     initPointer()
+    initWindow()
 
     return initGame()
   }
@@ -37,6 +38,7 @@ body {
     height: 100%;
     top: 0;
     left: 0;
+    touch-action: none;
   }
 }
 </style>

@@ -46,6 +46,8 @@ export default defineComponent({
     const { boxes } = this.$refs
     const r = 360 / this.boxCount
 
+    this.camera.position.z = 1
+
     boxes.forEach(({ mesh }, i) => {
       const t = Math.radians(r * i)
 
