@@ -42,10 +42,9 @@
     </Circle>
 
     <Octahedron
-      v-if="!isDisabled"
       ref="pyramid"
       :scale="{ x: .2, y: .2, z: .2 }"
-      :position="{ x: 0, y: 0, z: -.75 }"
+      :position="{ x: 0, y: 0, z: -.6 }"
     >
       <MatcapMaterial
         color="#ffffff"
@@ -55,25 +54,23 @@
 </template>
 
 <script>
-import { defineComponent, inject } from 'vue'
+import { defineComponent } from 'vue'
 import { Vector3 } from 'three'
+import { useGateway } from './'
 import anime from 'animejs'
 
 export default defineComponent({
   name: 'Port',
 
   setup () {
+    const { activePort } = useGateway()
+
     return {
-      gateway: inject('gateway')
+      activePort
     }
   },
 
   props: {
-    props: {
-      type: Object,
-      default: () => ({ active: false, disabled: false })
-    },
-
     position: {
       type: [ Object, Vector3 ],
       default: () => ({ x: 0, y: 0, z: 0 })
@@ -91,33 +88,33 @@ export default defineComponent({
   },
 
   watch: {
-    'gateway.activePort' (number) {
+    activePort (value) {
       if (this.isDisabled) return
 
+      const active = value === this.number
       const { transform, pyramid } = this.$refs
-      const value = number === this.number
 
       anime({
         targets: transform.group.scale,
-        x: value ? 1 : .5,
-        y: value ? 1 : .5,
-        z: value ? 1 : .5,
+        x: active ? 1 : .5,
+        y: active ? 1 : .5,
+        z: active ? 1 : .5,
         easing: 'easeOutQuad',
         duration: 500
       })
 
       anime({
         targets: pyramid.mesh.position,
-        z: value ? .75 : -.75,
+        z: active ? 1 : -.75,
         easing: 'easeOutQuad',
         duration: 1000
       })
       
       anime({
         targets: pyramid.mesh.scale,
-        x: value ? .75 : .2,
-        y: value ? .75 : .2,
-        z: value ? .75 : .2,
+        x: active ? .75 : .2,
+        y: active ? .75 : .2,
+        z: active ? .75 : .2,
         easing: 'easeOutQuad',
         duration: 1000
       })
@@ -126,12 +123,12 @@ export default defineComponent({
 
   computed: {
     opacity () {
-      return this.isDisabled ? .15 : .5
+      return this.isDisabled ? .2 : .75
     },
   },
 
   data: () => ({
-    font: require('../assets/fonts/V5XtenderRegular.font').default,
+    font: require('@/assets/fonts/V5XtenderRegular.font').default,
     circleOpacity: .2,
     test: false
   }),

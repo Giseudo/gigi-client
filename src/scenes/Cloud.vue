@@ -9,7 +9,7 @@
 <script>
 import { defineComponent } from 'vue'
 import { useGame, usePointer, useWindow } from '@/store'
-import Gateway from '@/components/Gateway'
+import { Gateway } from '@/components/Gateway'
 import anime from 'animejs'
 
 export default defineComponent({
@@ -41,7 +41,7 @@ export default defineComponent({
   }),
 
   mounted () {
-    this.camera.position.z = this.isMobile ? 15 : 8
+    this.camera.position.z = this.isMobile ? 12 : 8
 
     this.pointer.subscribe('pointer-down', this.onPointerDown)
     this.pointer.subscribe('pointer-move', this.onPointerMove)
@@ -106,7 +106,7 @@ export default defineComponent({
     onAccessPort (port) {
       anime({
         targets: this.camera.position,
-        z: !port ? (this.isMobile ? 15 : 8) : (this.isMobile ? 12 : 10),
+        z: !port ? (this.isMobile ? 15 : 8) : (this.isMobile ? 15 : 12),
         easing: 'easeOutQuad',
         duration: 1000,
       })

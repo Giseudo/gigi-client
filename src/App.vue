@@ -6,6 +6,7 @@
     </Scene>
      <EffectComposer>
       <RenderPass />
+      <SMAAPass />
     </EffectComposer>
   </Renderer>
 </template>
