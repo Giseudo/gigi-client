@@ -1,179 +1,177 @@
 <template>
-  <Group ref="transform" :position="position" :scale="{ x: .5, y: .5, z: .5 }">
-    <Text
-      :text="`:${number}`"
-      :size=".75"
-      :height="0"
-      :font-src="font"
-      @created="onLoadText"
+  <Group ref="transform" :rotation="rotation">
+    <Sphere
+      :width-segments="32"
+      :height-segments="32"
+      :position="{ x: 0, y: 0, z: 0 }"
+      :scale="{ x: radius, y: radius, z: radius }"
     >
-      <BasicMaterial
-        color="#ff0000"
-        :props="{ opacity, transparent: true }"
-      />
-    </Text>
+      <BasicMaterial color="#261c1c" />
+    </Sphere>
 
-    <Ring
-      :theta-segments="24"
-      :inner-radius="1.2"
-      :outer-radius="1.25"
-      :position="{ x: 0, y: 0, z: -.3 }"
-      @click="$emit('click')"
-    >
-      <BasicMaterial
-        color="#ff0000"
-        :props="{ opacity, transparent: true, side: 2 }"
+    <Group ref="ports" :key="port.number" v-for="port in ports">
+      <Port
+        :position="{ x: 0, y: 0, z: radius + .5 }"
+        :number="port.number"
+        :is-disabled="port.disabled"
+        @click="onAccessPort(port.number)"
       />
-    </Ring>
-
-    <Circle
-      v-if="!isDisabled"
-      :radius="1"
-      :segments="24"
-      :position="{ x: 0, y: 0, z: -.2 }"
-      @pointer-enter="onPointerEnter"
-      @pointer-leave="onPointerLeave"
-      @click="onClick"
-    >
-      <BasicMaterial
-        color="#ff0000"
-        :props="{ opacity: circleOpacity, transparent: true, side: 2 }"
-      />
-    </Circle>
-
-    <Octahedron
-      v-if="!isDisabled"
-      ref="pyramid"
-      :scale="{ x: .2, y: .2, z: .2 }"
-      :position="{ x: 0, y: 0, z: -.75 }"
-    >
-      <MatcapMaterial
-        color="#ffffff"
-      />
-    </Octahedron>
+    </Group>
   </Group>
 </template>
 
 <script>
-import { defineComponent, inject } from 'vue'
-import { Vector3 } from 'three'
+import { defineComponent, ref, provide } from 'vue'
+import { Vector3, BufferGeometry, Float32BufferAttribute, Line, EllipseCurve } from 'three'
+import Port from '@/components/Port'
+import LineRouteMaterial from '../materials/LineRoute'
 import anime from 'animejs'
 
 export default defineComponent({
   name: 'Gateway',
+  
+  components: {
+    Port
+  },
+
+  emits: [ 'port-accessed' ],
 
   setup () {
+    const transform = ref(null)
+    const gateway = ref({
+      activePort: null
+    })
+
+    provide('gateway', gateway)
+
     return {
-      gateway: inject('gateway')
+      transform,
+      gateway
     }
   },
 
   props: {
-    props: {
-      type: Object,
-      default: () => ({ active: false, disabled: false })
-    },
-
-    position: {
-      type: [ Object, Vector3 ],
-      default: () => ({ x: 0, y: 0, z: 0 })
-    },
-
-    number: {
+    radius: {
       type: Number,
-      detaul: 80
-    },
-
-    isDisabled: {
-      type: Boolean,
-      default: false
+      default: 4
     }
-  },
-
-  watch: {
-    'gateway.activePort' (number) {
-      if (this.isDisabled) return
-
-      const { transform, pyramid } = this.$refs
-      const value = number === this.number
-
-      anime({
-        targets: transform.group.scale,
-        x: value ? 1 : .5,
-        y: value ? 1 : .5,
-        z: value ? 1 : .5,
-        easing: 'easeOutQuad',
-        duration: 500
-      })
-
-      anime({
-        targets: pyramid.mesh.position,
-        z: value ? .75 : -.75,
-        easing: 'easeOutQuad',
-        duration: 1000
-      })
-      
-      anime({
-        targets: pyramid.mesh.scale,
-        x: value ? .75 : .2,
-        y: value ? .75 : .2,
-        z: value ? .75 : .2,
-        easing: 'easeOutQuad',
-        duration: 1000
-      })
-    }
-  },
-
-  computed: {
-    opacity () {
-      return this.isDisabled ? .15 : .5
-    },
   },
 
   data: () => ({
     font: require('../assets/fonts/V5XtenderRegular.font').default,
-    circleOpacity: .2,
-    test: false
+    rotation: { x: 0, y: 0, z: 0 },
+    redirectRouteMaterial: null,
+    ports: [
+      { number: 80, disabled: false },
+      { number: 443, disabled: false },
+      { number: 8080, disabled: true },
+      { number: 40, disabled: true },
+    ]
   }),
 
+  mounted () {
+    const { ports } = this.$refs
+
+    ports.forEach((port, i) => {
+      const number = this.ports[i].number
+
+      if (number === 443) {
+        port.group.rotateOnAxis(new Vector3(0, 1, 0), Math.radians(45))
+        port.group.rotateOnAxis(new Vector3(1, 0, 0), Math.radians(-45))
+      }
+
+      if (number === 8080) {
+        port.group.rotateOnAxis(new Vector3(0, 1, 0), Math.radians(-90))
+        port.group.rotateOnAxis(new Vector3(1, 0, 0), Math.radians(30))
+      }
+
+      if (number === 40) {
+        port.group.rotateOnAxis(new Vector3(0, 1, 0), Math.radians(180))
+        port.group.rotateOnAxis(new Vector3(1, 0, 0), Math.radians(-15))
+      }
+    })
+
+    this.createRedirectRoute()
+  },
+
   methods: {
-    onLoadText (mesh) {
-      mesh.geometry.computeBoundingBox()
+    onAccessPort (port) {
+      this.gateway.activePort = port
 
-      const boundingBox = mesh.geometry.boundingBox
-      const width = boundingBox.max.x - boundingBox.min.x
-      const height = boundingBox.max.y - boundingBox.min.y
+      if (port === 80) {
+        anime.timeline()
+          .add({
+            targets: this.transform.rotation,
+            x: 0,
+            y: 0,
+            duration: 1000,
+            easing: 'easeOutCubic',
+          })
+          .add({
+            targets: this.transform.rotation,
+            x: Math.radians(45),
+            y: Math.radians(-45),
+            duration: 3000,
+            easing: 'easeInOutCubic',
+          })
 
-      mesh.position.x -= width / 2
-      mesh.position.y -= height / 2
+        anime({
+          targets: this.redirectRouteMaterial.uniforms.time,
+          value: 1.0,
+          duration: 2000,
+          delay: 1000,
+          easing: 'linear',
+          complete: () => {
+            this.redirectRouteMaterial.uniforms.time.value = 0
+            this.gateway.activePort = 443
+          }
+        })
+      }
+
+      if (port === 443) {
+        anime({
+          targets: this.transform.rotation,
+          x: Math.radians(45),
+          y: Math.radians(-45),
+          duration: 1000,
+          easing: 'easeInOutCubic'
+        })
+      }
+
+      this.$emit('port-accessed', port)
     },
 
-    async onClick () {
-      if (this.isDisabled) return
+    createRedirectRoute () {
+      const curve = new EllipseCurve(
+        0, 0,
+        this.radius + 1, this.radius + 1,
+        .1, (Math.PI / 3) - .1,
+        false,
+        0
+      )
+      const points = curve.getPoints(8)
+      const uvs = new Float32Array(
+        points.reduce((acc, _, i) => ([
+          ...acc,
+          ...[ Math.lerp(0, 1, i / 8), 0 ],
+        ]), [])
+      )
 
-      this.$emit('click')
-    },
+      const geometry = new BufferGeometry().setFromPoints(points)
+      geometry.setAttribute('uv', new Float32BufferAttribute(uvs, 2))
 
-    onPointerEnter () {
-      if (this.isDisabled) return
-
-      anime({
-        targets: this,
-        circleOpacity: .4,
-        easing: 'easeOutQuad',
-        duration: 100
+      const material = new LineRouteMaterial({
+        transparent: true,
+        linewidth: 3,
+        depthWrite: false
       })
-    },
 
-    onPointerLeave () {
-      if (this.isDisabled) return
+      const ellipse = new Line(geometry, material)
+      ellipse.rotateOnAxis(new Vector3(0, 1, 0), Math.radians(-90))
+      ellipse.rotateOnAxis(new Vector3(1, 0, 0), Math.radians(-90 + 45 + 10))
 
-      anime({
-        targets: this,
-        circleOpacity: .2,
-        easing: 'easeOutQuad',
-        duration: 100
-      })
+      this.transform.add(ellipse)
+      this.redirectRouteMaterial = material
     }
   }
 })

@@ -1,8 +1,6 @@
 <template>
-  <PointLight :position="{ y: 50, z: 50 }" />
-
-  <Dome
-    ref="dome"
+  <Gateway
+    ref="gateway"
     :radius="3"
     @port-accessed="onAccessPort"
   />
@@ -11,14 +9,14 @@
 <script>
 import { defineComponent } from 'vue'
 import { useGame, usePointer, useWindow } from '@/store'
-import Dome from '@/components/Dome'
+import Gateway from '@/components/Gateway'
 import anime from 'animejs'
 
 export default defineComponent({
   name: 'Cloud',
 
   components: {
-    Dome
+    Gateway
   },
 
   setup () {
@@ -64,21 +62,21 @@ export default defineComponent({
     onPointerMove ({ message }) {
       if (!this.isDragging) return
 
-      const { dome } = this.$refs
+      const { gateway } = this.$refs
 
       this.delta = {
         x: message.movementY * this.deltaTime * this.speed,
         y: message.movementX * this.deltaTime * this.speed
       }
  
-      if (Math.abs(dome.transform.rotation.x + this.delta.x) < Math.PI / 3)
-        dome.transform.rotation.x += this.delta.x
+      if (Math.abs(gateway.transform.rotation.x + this.delta.x) < Math.PI / 3)
+        gateway.transform.rotation.x += this.delta.x
 
-      dome.transform.rotation.y += this.delta.y
+      gateway.transform.rotation.y += this.delta.y
     },
 
     onPointerUp () {
-      const { dome } = this.$refs
+      const { gateway } = this.$refs
 
       this.isDragging = false
 
@@ -94,10 +92,10 @@ export default defineComponent({
           return window.cancelAnimationFrame(animate)
         }
 
-        if (Math.abs(dome.transform.rotation.x + this.delta.x) < Math.PI / 3)
-          dome.transform.rotation.x += this.delta.x * step
+        if (Math.abs(gateway.transform.rotation.x + this.delta.x) < Math.PI / 3)
+          gateway.transform.rotation.x += this.delta.x * step
 
-        dome.transform.rotation.y += this.delta.y * step
+        gateway.transform.rotation.y += this.delta.y * step
 
         window.requestAnimationFrame(animate)
       }
