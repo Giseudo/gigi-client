@@ -1,15 +1,15 @@
 import { inject, provide, ref, onMounted } from 'vue'
 
-const time = ref(0)
+export const time = ref(0)
 const deltaTime = ref(0)
 const previousTime = ref(0)
 const renderer = ref(null)
 const camera = ref(null)
 
 const updateDeltaTime = ({ time: t }) => {
-  time.value = t
-  deltaTime.value = (t - previousTime.value) / 1000
-  previousTime.value = t
+  time.value = t / 1000
+  deltaTime.value = time.value - previousTime.value
+  previousTime.value = time.value
 }
 
 const mounted = () => {

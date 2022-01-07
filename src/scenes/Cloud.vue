@@ -1,7 +1,11 @@
 <template>
   <PointLight :position="{ y: 50, z: 50 }" />
 
-  <Dome ref="dome" @enter="onEnter" />
+  <Dome
+    ref="dome"
+    :radius="3"
+    @port-accessed="onAccessPort"
+  />
 </template>
 
 <script>
@@ -25,14 +29,21 @@ export default defineComponent({
     }
   },
 
+  computed: {
+    speed () {
+      return this.isMobile ? .05 : .2
+    }
+  },
+
   data: () => ({
     isDragging: false,
-    delta: { x: 0, y: 0 }
+    delta: { x: 0, y: 0 },
+    activeGate: null,
+    material: null
   }),
 
   mounted () {
-    this.camera.position.z = this.isMobile ? 15 : 12
-    console.log(this.isMobile)
+    this.camera.position.z = this.isMobile ? 15 : 8
 
     this.pointer.subscribe('pointer-down', this.onPointerDown)
     this.pointer.subscribe('pointer-move', this.onPointerMove)
@@ -46,17 +57,6 @@ export default defineComponent({
   },
 
   methods: {
-    onEnter (port) {
-      console.log('accessed port number', port)
-
-      anime({
-        targets: this.camera.position,
-        z: this.isMobile ? 8 : 10,
-        easing: 'easeOutQuad',
-        duration: 1000
-      })
-    },
-
     onPointerDown () {
       this.isDragging = true
     },
@@ -67,8 +67,8 @@ export default defineComponent({
       const { dome } = this.$refs
 
       this.delta = {
-        x: message.movementY * this.deltaTime * .05,
-        y: message.movementX * this.deltaTime * .05
+        x: message.movementY * this.deltaTime * this.speed,
+        y: message.movementX * this.deltaTime * this.speed
       }
  
       if (Math.abs(dome.transform.rotation.x + this.delta.x) < Math.PI / 3)
@@ -103,6 +103,15 @@ export default defineComponent({
       }
 
       animate()
+    },
+
+    onAccessPort (port) {
+      anime({
+        targets: this.camera.position,
+        z: !port ? (this.isMobile ? 15 : 8) : (this.isMobile ? 12 : 10),
+        easing: 'easeOutQuad',
+        duration: 1000,
+      })
     }
   }
 })

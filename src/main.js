@@ -5,6 +5,12 @@ import router from './router'
 
 Math.radians = (degrees) => degrees * Math.PI / 180
 Math.degrees = (radians) => radians * 180 / Math.PI
+Math.lerp = (value1, value2, amount) => {
+  amount = amount < 0 ? 0 : amount
+  amount = amount > 1 ? 1 : amount
+
+  return value1 + (value2 - value1) * amount
+}
 
 createApp(App)
   .use(TroisJSVuePlugin)
