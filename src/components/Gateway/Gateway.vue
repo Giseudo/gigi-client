@@ -1,12 +1,18 @@
 <template>
-  <Group ref="transform" :position="position" :rotation="rotation">
+  <Group
+    ref="transform"
+    :position="position"
+    :rotation="rotation"
+  >
     <Sphere
       :width-segments="32"
       :height-segments="32"
       :position="{ x: 0, y: 0, z: 0 }"
       :scale="{ x: radius, y: radius, z: radius }"
+      @pointer-enter="onPointerEnter"
+      @pointer-leave="onPointerLeave"
     >
-      <BasicMaterial color="#261c1c" />
+      <ShaderMaterial :props="gatewayMaterial" />
     </Sphere>
 
     <Group ref="httpPort">
@@ -48,7 +54,10 @@
 <script>
 import { defineComponent, defineAsyncComponent } from 'vue'
 import { initGateway } from './'
-import { Vector3 } from 'three'
+import { usePointer, useGame, useWindow } from '@/store'
+import { Vector3, Color } from 'three'
+import GatewayFrag from './GatewayFrag.glsl'
+import GatewayVert from './GatewayVert.glsl'
 import anime from 'animejs'
 
 export default defineComponent({
@@ -62,11 +71,28 @@ export default defineComponent({
   emits: [ 'port-accessed' ],
 
   setup () {
-    const { setActivePort, transform } = initGateway()
+    const { activePort, setActivePort, transform } = initGateway()
+    const { pointer } = usePointer()
+    const { deltaTime, time } = useGame()
+    const { isMobile } = useWindow()
+
+    const gatewayMaterial = {
+      vertexShader: GatewayVert,
+      fragmentShader: GatewayFrag,
+      uniforms: {
+        time,
+        color: { type: 'v3', value: new Color(0x261c1c) },
+      },
+    }
 
     return {
       transform,
-      setActivePort
+      activePort,
+      setActivePort,
+      pointer,
+      deltaTime,
+      gatewayMaterial,
+      isMobile
     }
   },
 
@@ -82,10 +108,18 @@ export default defineComponent({
     }
   },
 
+  computed: {
+    speed () {
+      return this.isMobile ? .05 : .2
+    }
+  },
+
   data: (vm) => ({
     rotation: { x: 0, y: 0, z: 0 },
     portOffset: { x: 0, y: 0, z: vm.radius + .5 },
-    redirectRouteMaterial: null,
+    delta: { x: 0, y: 0 },
+    isDragging: false,
+    canDrag: false,
     ports: [
       { number: 80, disabled: false },
       { number: 443, disabled: false },
@@ -105,6 +139,16 @@ export default defineComponent({
 
     sshPort.group.rotateOnAxis(new Vector3(0, 1, 0), Math.radians(180))
     sshPort.group.rotateOnAxis(new Vector3(1, 0, 0), Math.radians(-15))
+
+    this.pointer.subscribe('pointer-down', this.onPointerDown)
+    this.pointer.subscribe('pointer-move', this.onPointerMove)
+    this.pointer.subscribe('pointer-up', this.onPointerUp)
+  },
+
+  unmounted () {
+    this.pointer.unsubscribe('pointer-down', this.onPointerDown)
+    this.pointer.unsubscribe('pointer-move', this.onPointerMove)
+    this.pointer.unsubscribe('pointer-up', this.onPointerUp)
   },
 
   methods: {
@@ -125,7 +169,9 @@ export default defineComponent({
             x: Math.radians(45),
             y: Math.radians(-45),
             duration: 3000,
+            delay: 1000,
             easing: 'easeInOutCubic',
+            complete: () => this.$emit('port-accessed', this.activePort)
           })
       }
 
@@ -139,8 +185,68 @@ export default defineComponent({
         })
       }
 
-      this.$emit('port-accessed', port)
+      this.$emit('port-accessed', this.activePort)
     },
+
+    onPointerDown () {
+      if (!this.canDrag) return
+
+      this.isDragging = true
+    },
+
+    onPointerMove ({ message }) {
+      if (!this.isDragging) return
+
+      const { transform } = this.$refs
+
+      this.delta = {
+        x: message.movementY * this.deltaTime * this.speed,
+        y: message.movementX * this.deltaTime * this.speed
+      }
+ 
+      if (Math.abs(transform.rotation.x + this.delta.x) < Math.PI / 3)
+        transform.rotation.x += this.delta.x
+
+      transform.rotation.y += this.delta.y
+    },
+
+    onPointerUp () {
+      const { transform } = this.$refs
+
+      this.isDragging = false
+
+      let t = 1
+
+      const animate = () => {
+        const step = Math.sin(t)
+        t -= 0.05
+
+        if (step <= 0 || this.isDragging) {
+          this.delta = { x: 0, y: 0 }
+
+          return window.cancelAnimationFrame(animate)
+        }
+
+        if (Math.abs(transform.rotation.x + this.delta.x) < Math.PI / 3)
+          transform.rotation.x += this.delta.x * step
+
+        transform.rotation.y += this.delta.y * step
+
+        window.requestAnimationFrame(animate)
+      }
+
+      animate()
+    },
+
+    onPointerEnter () {
+      this.canDrag = true
+
+      if (this.isMobile) this.isDragging = true
+    },
+
+    onPointerLeave () {
+      this.canDrag = false
+    }
   }
 })
 </script>

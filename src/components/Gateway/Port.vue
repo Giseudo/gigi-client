@@ -1,6 +1,6 @@
 <template>
   <Group ref="transform" :position="position" :scale="{ x: .5, y: .5, z: .5 }">
-    <Text
+    <Text ref="text"
       :text="`:${number}`"
       :size=".75"
       :height="0"
@@ -14,7 +14,7 @@
     </Text>
 
     <Ring
-      :theta-segments="24"
+      :theta-segments="32"
       :inner-radius="1.2"
       :outer-radius="1.25"
       :position="{ x: 0, y: 0, z: -.3 }"
@@ -42,6 +42,7 @@
     </Circle>
 
     <Octahedron
+      v-if="!isDisabled"
       ref="pyramid"
       :scale="{ x: .2, y: .2, z: .2 }"
       :position="{ x: 0, y: 0, z: -.6 }"
@@ -92,7 +93,7 @@ export default defineComponent({
       if (this.isDisabled) return
 
       const active = value === this.number
-      const { transform, pyramid } = this.$refs
+      const { transform, pyramid, text } = this.$refs
 
       anime({
         targets: transform.group.scale,
@@ -104,19 +105,29 @@ export default defineComponent({
       })
 
       anime({
-        targets: pyramid.mesh.position,
-        z: active ? 1 : -.75,
-        easing: 'easeOutQuad',
+        targets: text.mesh.position,
+        y: active ? .8 : - (this.height / 2),
+        easing: 'easeInOutQuad',
+        delay: 1000,
         duration: 1000
       })
-      
+
       anime({
         targets: pyramid.mesh.scale,
         x: active ? .75 : .2,
         y: active ? .75 : .2,
         z: active ? .75 : .2,
         easing: 'easeOutQuad',
-        duration: 1000
+        duration: 1000,
+        delay: 1000
+      })
+
+      anime({
+        targets: pyramid.mesh.position,
+        z: active ? 1 : -.75,
+        easing: 'easeOutQuad',
+        duration: 1000,
+        delay: 500
       })
     }
   },
@@ -129,6 +140,7 @@ export default defineComponent({
 
   data: () => ({
     font: require('@/assets/fonts/V5XtenderRegular.font').default,
+    height: 0,
     circleOpacity: .2,
     test: false
   }),
@@ -143,6 +155,8 @@ export default defineComponent({
 
       mesh.position.x -= width / 2
       mesh.position.y -= height / 2
+
+      this.height = height
     },
 
     async onClick () {

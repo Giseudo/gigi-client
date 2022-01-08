@@ -32,7 +32,7 @@ export default defineComponent({
         targets: this.material.uniforms.time,
         value: 1.0,
         duration: 2000,
-        delay: 1000,
+        delay: 2000,
         easing: 'linear',
         complete: () => {
           this.material.uniforms.time.value = 0
