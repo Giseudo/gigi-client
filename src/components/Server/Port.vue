@@ -57,14 +57,14 @@
 <script>
 import { defineComponent } from 'vue'
 import { Vector3 } from 'three'
-import { useGateway } from './'
+import { useServer } from './'
 import anime from 'animejs'
 
 export default defineComponent({
   name: 'Port',
 
   setup () {
-    const { activePort } = useGateway()
+    const { activePort } = useServer()
 
     return {
       activePort

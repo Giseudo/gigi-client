@@ -1,251 +1,104 @@
 <template>
-  <Group
-    ref="transform"
-    :position="position"
-    :rotation="rotation"
-  >
-    <Sphere
-      :width-segments="32"
-      :height-segments="32"
-      :position="{ x: 0, y: 0, z: 0 }"
-      :scale="{ x: radius, y: radius, z: radius }"
-      @pointer-enter="onPointerEnter"
-      @pointer-leave="onPointerLeave"
+  <Group ref="transform">
+    <Cylinder
+      :radius-top=".5"
+      :radius-bottom=".5"
+      :height="20"
+      :position="{ y: 10.5 }"
     >
-      <ShaderMaterial :props="gatewayMaterial" />
+      <BlockMaterial />
+    </Cylinder>
+
+    <Sphere ref="core" :radius=".2">
+      <BlockMaterial />
     </Sphere>
 
-    <Group ref="httpPort">
-      <Port
-        :position="portOffset"
-        :number="80"
-        @click="onAccessPort(80)"
-      />
-    </Group>
+    <Cylinder
+      :radius-top=".5"
+      :radius-bottom=".5"
+      :height="20"
+      :position="{ y: -10.5 }"
+    >
+      <BlockMaterial />
+    </Cylinder>
 
-    <Group ref="httpsPort">
-      <Port
-        :position="portOffset"
-        :number="443"
-        @click="onAccessPort(443)"
-      />
-    </Group>
+    <Ring ref="ring"
+      :outer-radius="radius"
+      :inner-radius="radius - .5"
+      :theta-segments="64"
+      :phi-segments="1"
+      :rotation="{ x: -Math.PI / 2, y: 0, z: 0 }"
+    >
+      <BasicMaterial />
+    </Ring>
 
-    <Group ref="devPort">
-      <Port is-disabled
-        :position="portOffset"
-        :number="8080"
-        @click="onAccessPort(8080)"
-      />
-    </Group>
-
-    <Group ref="sshPort">
-      <Port is-disabled
-        :position="portOffset"
-        :number="22"
-        @click="onAccessPort(22)"
-      />
-    </Group>
-
-    <RedirectRoute :radius="radius" />
+    <Service ref="services"
+      v-for="(service, index) in services"
+      :key="index"
+      :port="service.port"
+      :position="getServicePosition(index)"
+    />
   </Group>
 </template>
 
 <script>
-import { defineComponent, defineAsyncComponent } from 'vue'
-import { initGateway } from './'
-import { usePointer, useGame, useWindow } from '@/store'
-import { Vector3, Color } from 'three'
-import GatewayFrag from './GatewayFrag.glsl'
-import GatewayVert from './GatewayVert.glsl'
-import anime from 'animejs'
+import { defineComponent, ref } from 'vue'
+import { Vector3 } from 'three'
+import { BlockMaterial } from '@/materials/Block'
+import Service from './Service'
 
 export default defineComponent({
   name: 'Gateway',
-  
+
   components: {
-    Port: defineAsyncComponent(() => import('./Port')),
-    RedirectRoute: defineAsyncComponent(() => import('./RedirectRoute'))
+    Service,
+    BlockMaterial,
   },
-
-  emits: [ 'port-accessed' ],
-
+  
   setup () {
-    const { activePort, setActivePort, transform } = initGateway()
-    const { pointer } = usePointer()
-    const { deltaTime, time } = useGame()
-    const { isMobile } = useWindow()
-
-    const gatewayMaterial = {
-      vertexShader: GatewayVert,
-      fragmentShader: GatewayFrag,
-      uniforms: {
-        time,
-        color: { type: 'v3', value: new Color(0x261c1c) },
-      },
-    }
+    const transform = ref(null)  
 
     return {
-      transform,
-      activePort,
-      setActivePort,
-      pointer,
-      deltaTime,
-      gatewayMaterial,
-      isMobile
+      transform
     }
   },
 
   props: {
-    position: {
-      type: Object,
-      default: () => ({ x: 0, y: 0, z: 0 })
-    },
-
     radius: {
       type: Number,
-      default: 4
+      default: 8
+    },
+    services: {
+      type: Array,
+      default: () => ([
+        { port: 7000 },
+        { port: 2375 },
+        { port: 5000 },
+        { port: 3366 },
+      ])
     }
   },
-
-  computed: {
-    speed () {
-      return this.isMobile ? .05 : .2
-    }
-  },
-
-  data: (vm) => ({
-    rotation: { x: 0, y: 0, z: 0 },
-    portOffset: { x: 0, y: 0, z: vm.radius + .5 },
-    delta: { x: 0, y: 0 },
-    isDragging: false,
-    canDrag: false,
-    ports: [
-      { number: 80, disabled: false },
-      { number: 443, disabled: false },
-      { number: 8080, disabled: true },
-      { number: 40, disabled: true },
-    ]
-  }),
 
   mounted () {
-    const { httpsPort, devPort, sshPort } = this.$refs
+    const { services, core } = this.$refs
+    const up = new Vector3(0, 1, 0)
 
-    httpsPort.group.rotateOnAxis(new Vector3(0, 1, 0), Math.radians(45))
-    httpsPort.group.rotateOnAxis(new Vector3(1, 0, 0), Math.radians(-45))
+    for (let i = 0; i < services.length; i++) {
+      const service = services[i].transform.group
 
-    devPort.group.rotateOnAxis(new Vector3(0, 1, 0), Math.radians(-90))
-    devPort.group.rotateOnAxis(new Vector3(1, 0, 0), Math.radians(30))
-
-    sshPort.group.rotateOnAxis(new Vector3(0, 1, 0), Math.radians(180))
-    sshPort.group.rotateOnAxis(new Vector3(1, 0, 0), Math.radians(-15))
-
-    this.pointer.subscribe('pointer-down', this.onPointerDown)
-    this.pointer.subscribe('pointer-move', this.onPointerMove)
-    this.pointer.subscribe('pointer-up', this.onPointerUp)
-  },
-
-  unmounted () {
-    this.pointer.unsubscribe('pointer-down', this.onPointerDown)
-    this.pointer.unsubscribe('pointer-move', this.onPointerMove)
-    this.pointer.unsubscribe('pointer-up', this.onPointerUp)
+      service.lookAt(core.mesh.position)
+      service.rotateOnAxis(up, Math.PI)
+    }
   },
 
   methods: {
-    onAccessPort (port) {
-      this.setActivePort(port)
+    getServicePosition (index) {
+      const count = this.services.length
+      const x = Math.sin((Math.TAU / count) * index) * (this.radius - 1)
+      const y = .5
+      const z = Math.cos((Math.TAU / count) * index) * (this.radius - 1)
 
-      if (port === 80) {
-        anime.timeline()
-          .add({
-            targets: this.transform.rotation,
-            x: 0,
-            y: 0,
-            duration: 1000,
-            easing: 'easeOutCubic',
-          })
-          .add({
-            targets: this.transform.rotation,
-            x: Math.radians(45),
-            y: Math.radians(-45),
-            duration: 3000,
-            delay: 1000,
-            easing: 'easeInOutCubic',
-            complete: () => this.$emit('port-accessed', this.activePort)
-          })
-      }
-
-      if (port === 443) {
-        anime({
-          targets: this.transform.rotation,
-          x: Math.radians(45),
-          y: Math.radians(-45),
-          duration: 1000,
-          easing: 'easeInOutCubic'
-        })
-      }
-
-      this.$emit('port-accessed', this.activePort)
-    },
-
-    onPointerDown () {
-      if (!this.canDrag) return
-
-      this.isDragging = true
-    },
-
-    onPointerMove ({ message }) {
-      if (!this.isDragging) return
-
-      const { transform } = this.$refs
-
-      this.delta = {
-        x: message.movementY * this.deltaTime * this.speed,
-        y: message.movementX * this.deltaTime * this.speed
-      }
- 
-      if (Math.abs(transform.rotation.x + this.delta.x) < Math.PI / 3)
-        transform.rotation.x += this.delta.x
-
-      transform.rotation.y += this.delta.y
-    },
-
-    onPointerUp () {
-      const { transform } = this.$refs
-
-      this.isDragging = false
-
-      let t = 1
-
-      const animate = () => {
-        const step = Math.sin(t)
-        t -= 0.05
-
-        if (step <= 0 || this.isDragging) {
-          this.delta = { x: 0, y: 0 }
-
-          return window.cancelAnimationFrame(animate)
-        }
-
-        if (Math.abs(transform.rotation.x + this.delta.x) < Math.PI / 3)
-          transform.rotation.x += this.delta.x * step
-
-        transform.rotation.y += this.delta.y * step
-
-        window.requestAnimationFrame(animate)
-      }
-
-      animate()
-    },
-
-    onPointerEnter () {
-      this.canDrag = true
-
-      if (this.isMobile) this.isDragging = true
-    },
-
-    onPointerLeave () {
-      this.canDrag = false
+      return { x, y, z}
     }
   }
 })

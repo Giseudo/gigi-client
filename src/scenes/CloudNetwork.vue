@@ -1,18 +1,18 @@
 <template>
-  <Gateway :radius="4" @port-accessed="onAccessPort" />
+  <Server :radius="4" @port-accessed="onAccessPort" />
 </template>
 
 <script>
 import { defineComponent } from 'vue'
 import { useGame, useWindow } from '@/store'
-import { Gateway } from '@/components/Gateway'
+import { Server } from '@/components/Server'
 import anime from 'animejs'
 
 export default defineComponent({
-  name: 'Cloud',
+  name: 'CloudNetwork',
 
   components: {
-    Gateway
+    Server
   },
 
   setup () {

@@ -1,6 +1,6 @@
 import { defineComponent } from 'vue'
 import { Vector3, BufferGeometry, Float32BufferAttribute, Line, EllipseCurve } from 'three'
-import { useGateway } from './'
+import { useServer } from './'
 import LineRouteMaterial from '@/materials/LineRoute'
 import anime from 'animejs'
 
@@ -15,7 +15,7 @@ export default defineComponent({
   },
 
   setup () {
-    const { transform, activePort, setActivePort } = useGateway()
+    const { transform, activePort, setActivePort } = useServer()
 
     return {
       parent: transform,

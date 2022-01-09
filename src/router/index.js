@@ -3,18 +3,18 @@ import { createRouter, createWebHistory } from 'vue-router'
 const routes = [
   {
     path: '/',
-    name: 'Cloud',
-    component: () => import('../scenes/Cloud.vue')
+    name: 'CloudNetwork',
+    component: () => import('../scenes/CloudNetwork')
   },
   {
     path: '/server',
     name: 'InsideServer',
-    component: () => import('../scenes/InsideServer.vue')
+    component: () => import('../scenes/InsideServer')
   },
   {
     path: '/playground',
     name: 'Playground',
-    component: () => import('../scenes/Playground.vue')
+    component: () => import('../scenes/Playground')
   }
 ]
 
