@@ -3,14 +3,14 @@ import { inject, provide, ref, onMounted } from 'vue'
 export const initGame = () => {
   const time = ref(0)
   const deltaTime = ref(0)
-  const previousTime = ref(0)
+  // const previousTime = ref(0)
   const renderer = ref(null)
   const camera = ref(null)
 
   const updateDeltaTime = ({ time: t }) => {
     time.value = t / 1000
-    deltaTime.value = time.value - previousTime.value
-    previousTime.value = time.value
+    deltaTime.value = 0.01666 // time.value - previousTime.value
+   //  previousTime.value = time.value
   }
 
   const mounted = () => {
@@ -26,10 +26,8 @@ export const initGame = () => {
   onMounted(mounted)
 
   return {
-    time,
-    deltaTime,
     renderer,
-    camera
+    time
   }
 }
 

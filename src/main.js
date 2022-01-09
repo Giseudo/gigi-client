@@ -11,6 +11,7 @@ Math.lerp = (value1, value2, amount) => {
 
   return value1 + (value2 - value1) * amount
 }
+Math.TAU = Math.PI * 2
 
 createApp(App)
   .use(TroisJSVuePlugin)

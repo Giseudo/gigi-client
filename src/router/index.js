@@ -7,6 +7,11 @@ const routes = [
     component: () => import('../scenes/Cloud.vue')
   },
   {
+    path: '/server',
+    name: 'InsideServer',
+    component: () => import('../scenes/InsideServer.vue')
+  },
+  {
     path: '/playground',
     name: 'Playground',
     component: () => import('../scenes/Playground.vue')

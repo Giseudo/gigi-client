@@ -6,21 +6,27 @@
     </Scene>
      <EffectComposer>
       <RenderPass />
-      <SMAAPass />
+      <FXAAPass />
     </EffectComposer>
   </Renderer>
 </template>
 
 <script>
 import { defineComponent } from 'vue'
-import { initGame, initPointer, initWindow } from './store'
+import { initGame, initPointer, initWindow, initNavigator, initInput } from './store'
 
 export default defineComponent({
   setup () {
-    initPointer()
-    initWindow()
+    const { renderer } = initGame()
 
-    return initGame()
+    initWindow()
+    initNavigator()
+    initPointer()
+    initInput()
+
+    return {
+      renderer
+    }
   }
 })
 </script>

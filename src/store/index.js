@@ -1,3 +1,5 @@
 export * from './game'
+export * from './input'
+export * from './navigator'
 export * from './pointer'
 export * from './window'
