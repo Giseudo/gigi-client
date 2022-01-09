@@ -27,6 +27,8 @@
 import { Vector2 } from 'three'
 
 export default {
+  name: 'GTouchStick',
+
   data: () => ({
     isDragging: false,
     direction: new Vector2(),
@@ -99,7 +101,7 @@ export default {
     left: 50%;
     transform: translate(-50%, -50%);
     background: rgba(white, .2);
-    box-shadow: 0 0 70px rgba(white, .3);
+    // box-shadow: 0 0 70px rgba(white, .3);
   }
 
   &__handle {
@@ -134,8 +136,6 @@ export default {
     transform: translate(-50%, -50%);
   }
 
-  &--is-dragging {
-    opacity: 1;
-  }
+  &--is-dragging { opacity: 1; }
 }
 </style>

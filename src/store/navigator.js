@@ -31,6 +31,9 @@ export const initNavigator = () => {
     if (timer.value > TIME_INTERVAL) {
       const userPosition = userAgent.value?.position
 
+      if (!userPosition)
+        return window.requestAnimationFrame(onRender)
+
       if (!userPosition.equals(previousPosition.value))
         dispatcher.dispatchEvent({
           type: 'user-move',

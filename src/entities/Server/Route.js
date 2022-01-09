@@ -1,11 +1,14 @@
 import { defineComponent } from 'vue'
-import { Vector3, BufferGeometry, Float32BufferAttribute, Line, EllipseCurve } from 'three'
+import { Vector3, ShaderMaterial, BufferGeometry, Float32BufferAttribute, Line, EllipseCurve } from 'three'
 import { useServer } from './'
-import LineRouteMaterial from '@/materials/LineRoute'
+import fragmentShader from './RouteFrag.glsl'
+import vertexShader from './RouteVert.glsl'
 import anime from 'animejs'
 
 export default defineComponent({
-  name: 'RedirectRoute',
+  name: 'Route',
+
+  emits: [ 'redirect' ],
 
   props: {
     radius: {
@@ -15,12 +18,22 @@ export default defineComponent({
   },
 
   setup () {
-    const { transform, activePort, setActivePort } = useServer()
+    const { transform, activePort } = useServer()
+    const material = new ShaderMaterial({
+      fragmentShader,
+      vertexShader,
+      transparent: true,
+      linewidth: 3,
+      depthWrite: false,
+      uniforms: {
+        time: { value: 0 }
+      }
+    })
 
     return {
       parent: transform,
       activePort,
-      setActivePort
+      material
     }
   },
 
@@ -36,15 +49,11 @@ export default defineComponent({
         easing: 'linear',
         complete: () => {
           this.material.uniforms.time.value = 0
-          this.setActivePort(443)
+          this.$emit('redirect', 443)
         }
       })
     }
   },
-
-  data: () => ({
-    material: null
-  }),
 
   mounted () {
     this.init()
@@ -71,18 +80,11 @@ export default defineComponent({
       const geometry = new BufferGeometry().setFromPoints(points)
       geometry.setAttribute('uv', new Float32BufferAttribute(uvs, 2))
 
-      const material = new LineRouteMaterial({
-        transparent: true,
-        linewidth: 3,
-        depthWrite: false
-      })
-
-      const ellipse = new Line(geometry, material)
+      const ellipse = new Line(geometry, this.material)
       ellipse.rotateOnAxis(new Vector3(0, 1, 0), Math.radians(-90))
       ellipse.rotateOnAxis(new Vector3(1, 0, 0), Math.radians(-90 + 45 + 10))
 
       this.parent.add(ellipse)
-      this.material = material
     }
   },
 

@@ -44,7 +44,7 @@
 <script>
 import { defineComponent, ref } from 'vue'
 import { Vector3 } from 'three'
-import { BlockMaterial } from '@/materials/Block'
+import { BlockMaterial } from '@/materials'
 import Service from './Service'
 
 export default defineComponent({

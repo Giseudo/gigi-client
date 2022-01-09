@@ -3,7 +3,7 @@
 
   <UserAgent ref="user" />
 
-  <TouchStick @move="onTouchMove" />
+  <GTouchStick @move="onTouchMove" />
 
   <Sphere :scale="{ x: 50, y: 50, z: 50 }">
     <SkyboxMaterial />
@@ -14,20 +14,20 @@
 import { defineComponent } from 'vue'
 import { Vector3 } from 'three'
 import { useGame, useInput, useNavigator } from '@/store'
-import { Gateway } from '@/components/Gateway'
-import { UserAgent } from '@/components/UserAgent'
-import TouchStick from '@/components/TouchStick'
-import SkyboxMaterial from '@/materials/Skybox'
+import { Gateway } from '@/entities/Gateway'
+import { UserAgent } from '@/entities/UserAgent'
+import { GTouchStick } from '@/components'
+import { SkyboxMaterial } from '@/materials'
 import anime from 'animejs'
 
 export default defineComponent({
   name: 'InsideServer',
 
   components: {
+    GTouchStick,
     UserAgent,
     Gateway,
     SkyboxMaterial,
-    TouchStick
   },
   
   setup () {

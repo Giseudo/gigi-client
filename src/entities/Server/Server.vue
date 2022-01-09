@@ -47,7 +47,10 @@
       />
     </Group>
 
-    <RedirectRoute :radius="radius" />
+    <Route
+      :radius="radius"
+      @redirect="onRedirect"
+    />
   </Group>
 </template>
 
@@ -65,7 +68,7 @@ export default defineComponent({
   
   components: {
     Port: defineAsyncComponent(() => import('./Port')),
-    RedirectRoute: defineAsyncComponent(() => import('./RedirectRoute'))
+    Route: defineAsyncComponent(() => import('./Route'))
   },
 
   emits: [ 'port-accessed' ],
@@ -186,6 +189,10 @@ export default defineComponent({
       }
 
       this.$emit('port-accessed', this.activePort)
+    },
+
+    onRedirect () {
+      this.setActivePort(443)
     },
 
     onPointerDown () {

@@ -22,7 +22,7 @@
 <script>
 import { defineComponent, ref } from 'vue'
 import { Vector3 } from 'three'
-import { BlockMaterial } from '@/materials/Block'
+import { BlockMaterial } from '@/materials'
 import { useNavigator, useGame } from '@/store'
 import anime from 'animejs'
 

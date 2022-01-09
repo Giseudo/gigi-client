@@ -5,7 +5,7 @@
 <script>
 import { defineComponent } from 'vue'
 import { useGame, useWindow } from '@/store'
-import { Server } from '@/components/Server'
+import { Server } from '@/entities/Server'
 import anime from 'animejs'
 
 export default defineComponent({
@@ -42,6 +42,7 @@ export default defineComponent({
           easing: 'easeInOutQuad',
           delay: 1000,
           duration: 3000,
+          complete: () => this.$router.push({ name: 'InsideServer' })
         })
     }
   }
