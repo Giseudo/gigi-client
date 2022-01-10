@@ -9,21 +9,21 @@
       @click="onClick"
     >
       <BasicMaterial
-        color="#00ff00"
-        :props="{ opacity: .8, transparent: true }"
+        color="#ffff00"
+        :props="{ opacity: .8, transparent: true, blending: 2 }"
       />
     </Text>
 
     <Box ref="box"
-      :scale="{ x: .5, y: 2, z: .05 }"
+      :scale="{ x: .5, y: 2, z: .1 }"
       @click="onClick"
     >
-      <BlockMaterial />
+      <BlockMaterial :displace="{ x: 0, y: 0, z: .05 }" />
     </Box>
 
     <Plane ref="screen"
       :scale="{ x: 0, y: 0, z: 1 }"
-      :position="{ y: 1.2, z: .05 }"
+      :position="{ y: 2, z: .5 }"
       :rotation="{ x: -Math.PI / 8 }"
       @click="onClick"
     >
@@ -41,6 +41,8 @@ import anime from 'animejs'
 
 export default defineComponent({
   name: 'Service',
+
+  emits: [ 'click', 'toggle' ],
 
   components: {
     ProjectionMaterial,
@@ -75,22 +77,17 @@ export default defineComponent({
 
   watch: {
     isActive (value) {
-      const { text, screen } = this.$refs
-
-      anime({
-        targets: text.mesh.position,
-        y: value ? 2.25 : .5,
-        duration: 300,
-        easing: value ? 'easeInQuad' : 'easeOutQuad'
-      })
+      const { screen } = this.$refs
 
       anime({
         targets: screen.mesh.scale,
-        x: value ? 2 : 0,
-        y: value ? 1.25 : 0,
+        x: value ? 2.5 : 0,
+        y: value ? 1.5 : 0,
         duration: 300,
         easing: value ? 'easeInQuad' : 'easeOutQuad'
       })
+
+      this.$emit('toggle', { active: value, port: this.port })
     }
   },
 

@@ -25,7 +25,7 @@
     <Ring ref="path"
       :outer-radius="radius"
       :inner-radius="radius - .5"
-      :theta-segments="64"
+      :theta-segments="64 * 2"
       :phi-segments="1"
       :rotation="{ x: -Math.PI / 2, y: 0, z: 0 }"
     >
@@ -38,13 +38,18 @@
       :port="service.port"
       :position="getServicePosition(index)"
       @click="$emit('service-access', service)"
+      @toggle="onToggleService"
     />
   </Group>
+
+  <span v-if="activeService" class="gateway__active-service">
+    {{ activeService }}
+  </span>
 </template>
 
 <script>
 import { defineComponent, ref } from 'vue'
-import { Vector3 } from 'three'
+import { Vector3, RingBufferGeometry } from 'three'
 import { BlockMaterial } from '@/materials'
 import { useGame } from '@/store'
 import Service from './Service'
@@ -94,27 +99,60 @@ export default defineComponent({
     }
   },
 
+  data: () => ({
+    activeService: null
+  }),
+
   mounted () {
-    const { services, core } = this.$refs
+    const { services, core, path } = this.$refs
     const up = new Vector3(0, 1, 0)
+    const target = core.mesh.position.clone()
 
     for (let i = 0; i < services.length; i++) {
       const service = services[i].transform.group
+      target.y = service.position.y
 
-      service.lookAt(core.mesh.position)
+      service.lookAt(target)
       service.rotateOnAxis(up, Math.PI)
+    }
+
+    // FIXME move to another component
+    const geo = new RingBufferGeometry(3, 5, 64 * 2)
+    const pos = geo.attributes.position
+    const v3 = new Vector3()
+
+    for (let i = 0; i < pos.count; i++){
+      v3.fromBufferAttribute(pos, i)
+      path.mesh.geometry.attributes.uv.setXY(i, v3.length() < 4 ? 0 : 1, 1)
     }
   },
 
   methods: {
     getServicePosition (index) {
       const count = this.services.length
-      const x = Math.sin((Math.TAU / count) * index) * (this.radius - 1.5)
-      const y = -.75
-      const z = Math.cos((Math.TAU / count) * index) * (this.radius - 1.5)
+      const x = Math.sin((Math.TAU / count) * index) * (this.radius - 1)
+      const y = -.25
+      const z = Math.cos((Math.TAU / count) * index) * (this.radius - 1)
 
       return { x, y, z}
+    },
+
+    onToggleService ({ active, port }) {
+      this.activeService = active ? port : null
     }
   }
 })
 </script>
+
+<style lang="scss">
+.gateway {
+  &__active-service {
+    position: absolute;
+    top: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 40px;
+    color: white;
+  }
+}
+</style>

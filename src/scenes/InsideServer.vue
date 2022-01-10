@@ -110,7 +110,7 @@ export default defineComponent({
       this.camera.position.x = Math.sin(t) * (this.radius + 3)
       this.camera.position.z = Math.cos(t) * (this.radius + 3)
       this.camera.lookAt(
-        new Vector3(Math.sin(t) * (this.radius - 2), 0, Math.cos(t) * (this.radius - 2))
+        new Vector3(Math.sin(t) * (this.radius - 3), 0, Math.cos(t) * (this.radius - 3))
       )
     }
   }
