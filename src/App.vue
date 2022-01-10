@@ -1,6 +1,6 @@
 <template>
   <Renderer ref="renderer" resize="window">
-    <Camera />
+    <Camera :fov="60" />
     <Scene>
       <RouterView />
     </Scene>
@@ -27,6 +27,9 @@ export default defineComponent({
     return {
       renderer
     }
+  },
+
+  mounted () {
   }
 })
 </script>

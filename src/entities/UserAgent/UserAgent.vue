@@ -1,7 +1,6 @@
 <template>
   <Group ref="transform">
-    <Box
-      ref="pyramid"
+    <Box ref="pyramid"
       :position="{ y: 0.1 }"
       :scale="{ x: .2, y: .2, z: .2 }"
     >
@@ -11,13 +10,17 @@
 </template>
 
 <script>
-import { defineComponent, ref } from 'vue'
+import { defineComponent, ref, onMounted } from 'vue'
 
 export default defineComponent({
   name: 'UserAgent',
 
   setup () {
     const transform = ref(null)
+
+    onMounted(() => {
+      transform.value = transform.value.group
+    })
 
     return {
       transform

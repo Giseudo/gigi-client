@@ -37,6 +37,7 @@
       :key="index"
       :port="service.port"
       :position="getServicePosition(index)"
+      @click="$emit('service-access', service)"
     />
   </Group>
 </template>
@@ -49,6 +50,8 @@ import Service from './Service'
 
 export default defineComponent({
   name: 'Gateway',
+
+  emits: [ 'service-access' ],
 
   components: {
     Service,

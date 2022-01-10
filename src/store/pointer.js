@@ -1,6 +1,8 @@
 import { inject, provide } from 'vue'
 import { EventDispatcher } from 'three'
 
+const SUBSCRIBE = 'pointer/subscribe'
+const UNSUBSCRIBE = 'pointer/unsubscribe'
 const dispatcher = new EventDispatcher()
 
 const onPointerDown = event => dispatcher.dispatchEvent({ type: 'pointer-down', message: event })
@@ -25,6 +27,8 @@ const pointer = {
 export const initPointer = () => {
   provide('setCursor', setCursor)
   provide('pointer', pointer)
+  provide(SUBSCRIBE, subscribe)
+  provide(UNSUBSCRIBE, unsubscribe)
 
   document.addEventListener('pointerdown', onPointerDown)
   document.addEventListener('pointermove', onPointerMove)
@@ -39,5 +43,7 @@ export const destroyPointer = () => {
 
 export const usePointer = () => ({
   setCursor: inject('setCursor'),
-  pointer: inject('pointer')
+  pointer: inject('pointer'),
+  subscribe: inject(SUBSCRIBE),
+  unsubscribe: inject(UNSUBSCRIBE),
 })

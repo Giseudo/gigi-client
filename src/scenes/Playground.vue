@@ -24,10 +24,8 @@
 <script>
 import { defineComponent } from 'vue'
 import { useGame, usePointer } from '../store'
+import { Vector3 } from 'three'
 import anime from 'animejs'
-
-Math.radians = (degrees) => degrees * Math.PI / 180
-Math.degrees = (radians) => radians * 180 / Math.PI
 
 export default defineComponent({
   setup () {
@@ -46,7 +44,17 @@ export default defineComponent({
     const { boxes } = this.$refs
     const r = 360 / this.boxCount
 
-    this.camera.position.z = 1
+    this.camera.position.set(0, 0, 0)
+    this.camera.lookAt(new Vector3())
+
+    anime({
+      targets: this.camera.position,
+      z: 1,
+      y: 0,
+      x: 0,
+      duration: 1000,
+      easing: 'easeOutQuad'
+    })
 
     boxes.forEach(({ mesh }, i) => {
       const t = Math.radians(r * i)

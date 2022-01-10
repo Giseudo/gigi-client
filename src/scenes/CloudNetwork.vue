@@ -1,11 +1,12 @@
 <template>
-  <Server :radius="4" @port-accessed="onAccessPort" />
+  <Server :radius="4" @port-access="onAccessPort" />
 </template>
 
 <script>
 import { defineComponent } from 'vue'
 import { useGame, useWindow } from '@/store'
 import { Server } from '@/entities/Server'
+import { Vector3 } from 'three'
 import anime from 'animejs'
 
 export default defineComponent({
@@ -23,7 +24,15 @@ export default defineComponent({
   },
 
   mounted () {
-    this.camera.position.z = this.isMobile ? 14 : 12
+    this.camera.position.set(0, 0, 40)
+    this.camera.lookAt(new Vector3())
+
+    anime({
+      targets: this.camera.position,
+      z: this.isMobile ? 14 : 12,
+      duration: 2000,
+      easing: 'easeOutQuad'
+    })
   },
 
   methods: {

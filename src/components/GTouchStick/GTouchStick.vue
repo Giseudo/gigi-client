@@ -1,10 +1,5 @@
 <template>
-  <div class="g-touch-stick"
-    :class="classes"
-    @touchstart="onTouchStart"
-    @touchmove="onTouchMove"
-    @touchend="onTouchEnd"
-  >
+  <div class="g-touch-stick" :class="classes">
     <div
       class="g-touch-stick__background"
       :style="{ left: `${origin.x}px`, top: `${origin.y}px` }"
@@ -24,6 +19,7 @@
 </template>
 
 <script>
+import { usePointer } from '@/store'
 import { Vector2 } from 'three'
 
 export default {
@@ -36,6 +32,14 @@ export default {
     touch: new Vector2()
   }),
 
+  setup () {
+    const { subscribe, unsubscribe } = usePointer()
+
+    return {
+      subscribe, unsubscribe
+    }
+  },
+
   computed: {
     classes () {
       return {
@@ -44,27 +48,29 @@ export default {
     }
   },
 
-  mounted () { },
+  mounted () {
+    this.subscribe('pointer-down', this.onTouchStart)
+    this.subscribe('pointer-move', this.onTouchMove)
+    this.subscribe('pointer-up', this.onTouchEnd)
+  },
 
-  beforeUmount () { },
+  unmounted () {
+    this.unsubscribe('pointer-down', this.onTouchStart)
+    this.unsubscribe('pointer-move', this.onTouchMove)
+    this.unsubscribe('pointer-up', this.onTouchEnd)
+  },
 
   methods: {
-    onTouchStart (event) {
-      event.preventDefault()
-      const { touches } = event
-
-      if (touches.length === 0) return
-
-      this.origin.set(touches[0].pageX, touches[0].pageY)
+    onTouchStart ({ message: event }) {
+      this.origin.set(event.pageX, event.pageY)
       this.touch.copy(this.origin)
       this.isDragging = true
     },
 
-    onTouchMove (event) {
-      const { touches } = event
-      this.touch.set(touches[0].pageX, touches[0].pageY)
+    onTouchMove ({ message: event }) {
+      if (!this.isDragging) return
 
-      if (touches.length === 0) return
+      this.touch.set(event.pageX, event.pageY)
 
       this.direction = this.origin.clone().sub(this.touch).normalize()
       this.direction.x *= -1
@@ -90,6 +96,8 @@ export default {
   bottom: 0;
   opacity: 0;
   transition: opacity .2s ease-in-out;
+  pointer-events: none;
+  overflow: hidden;
   z-index: 20;
 
   &__background {
@@ -100,8 +108,8 @@ export default {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: rgba(white, .2);
-    // box-shadow: 0 0 70px rgba(white, .3);
+    background: rgba(black, .2);
+    border: 2px solid red;
   }
 
   &__handle {
@@ -113,11 +121,10 @@ export default {
     width: 50px;
     height: 50px;
     border-radius: 75px;
-    transition: .2s ease-out;
     &:before {
       content: "";
       position: absolute;
-      background: rgba(white, .5);
+      background: rgba(red, 1);
       width: 40%;
       height: 40%;
       border-radius: 75px;

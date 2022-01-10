@@ -71,7 +71,7 @@ export default defineComponent({
     Route: defineAsyncComponent(() => import('./Route'))
   },
 
-  emits: [ 'port-accessed' ],
+  emits: [ 'port-access' ],
 
   setup () {
     const { activePort, setActivePort, transform } = initServer()
@@ -174,7 +174,7 @@ export default defineComponent({
             duration: 3000,
             delay: 1000,
             easing: 'easeInOutCubic',
-            complete: () => this.$emit('port-accessed', this.activePort)
+            complete: () => this.$emit('port-access', this.activePort)
           })
       }
 
@@ -188,7 +188,7 @@ export default defineComponent({
         })
       }
 
-      this.$emit('port-accessed', this.activePort)
+      this.$emit('port-access', this.activePort)
     },
 
     onRedirect () {

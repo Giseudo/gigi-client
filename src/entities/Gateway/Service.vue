@@ -5,6 +5,7 @@
       :size=".25"
       :height="0"
       :font-src="font"
+      @click="onClick"
       @created="onLoadText"
     >
       <BasicMaterial
@@ -13,8 +14,19 @@
       />
     </Text>
 
-    <Box ref="box" :scale="{ x: .5, y: 2, z: .05 }" >
+    <Box ref="box"
+      :scale="{ x: .5, y: 2, z: .05 }"
+      @click="onClick"
+    >
       <BlockMaterial />
+    </Box>
+
+
+    <Box ref="screen"
+      :scale="{ x: 0, y: 0, z: 0 }"
+      :position="{ y: .75, z: .05 }"
+    >
+      <ProjectionMaterial />
     </Box>
   </Group>
 </template>
@@ -22,7 +34,7 @@
 <script>
 import { defineComponent, ref } from 'vue'
 import { Vector3 } from 'three'
-import { BlockMaterial } from '@/materials'
+import { BlockMaterial, ProjectionMaterial } from '@/materials'
 import { useNavigator, useGame } from '@/store'
 import anime from 'animejs'
 
@@ -30,6 +42,7 @@ export default defineComponent({
   name: 'Service',
 
   components: {
+    ProjectionMaterial,
     BlockMaterial
   },
   
@@ -61,12 +74,21 @@ export default defineComponent({
 
   watch: {
     isActive (value) {
-      const { text } = this.$refs
+      const { text, screen } = this.$refs
 
       anime({
         targets: text.mesh.position,
         y: value ? -.25 : .5,
         duration: 300,
+        easing: 'easeOutQuad'
+      })
+
+      anime({
+        targets: screen.mesh.scale,
+        x: value ? 2 : 0,
+        y: value ? 1.25 : 0,
+        z: value ? .05 : 0,
+        duration: 500,
         easing: 'easeOutQuad'
       })
     }
@@ -83,6 +105,14 @@ export default defineComponent({
   },
 
   methods: {
+    init () {
+      const forward = new Vector3(0, 0, -1)
+
+      this.direction = this.transform.group.getWorldDirection(forward)
+
+      this.subscribe('user-move', this.onUserMove)
+    },
+
     onLoadText (mesh) {
       mesh.geometry.computeBoundingBox()
 
@@ -96,14 +126,6 @@ export default defineComponent({
       this.init()
     },
 
-    init () {
-      const forward = new Vector3(0, 0, -1)
-
-      this.direction = this.transform.group.getWorldDirection(forward)
-
-      this.subscribe('user-move', this.onUserMove)
-    },
-
     onUserMove ({ message: userPosition }) {
       const userDirection = userPosition.clone()
         .sub(this.transform.group.position)
@@ -111,6 +133,12 @@ export default defineComponent({
       const inFrontOf = userDirection.dot(this.direction) > .5
 
       this.isActive = inFrontOf
+    },
+
+    onClick () {
+      if (!this.isActive) return
+
+      this.$emit('click')
     }
   }
 })
