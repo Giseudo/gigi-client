@@ -57,6 +57,10 @@ export default defineComponent({
       { port: 2375 },
       { port: 5000 },
       { port: 3366 },
+      { port: 7001 },
+      { port: 2376 },
+      { port: 5001 },
+      { port: 3367 },
     ],
   }),
 

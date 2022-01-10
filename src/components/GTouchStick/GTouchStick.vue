@@ -109,7 +109,7 @@ export default {
     left: 50%;
     transform: translate(-50%, -50%);
     background: rgba(black, .2);
-    border: 2px solid red;
+    border: 2px solid white;
   }
 
   &__handle {
@@ -124,7 +124,7 @@ export default {
     &:before {
       content: "";
       position: absolute;
-      background: rgba(red, 1);
+      background: rgba(white, 1);
       width: 40%;
       height: 40%;
       border-radius: 75px;
