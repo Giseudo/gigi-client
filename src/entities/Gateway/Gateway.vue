@@ -6,7 +6,7 @@
       :height="20"
       :position="{ y: 10.5 }"
     >
-      <BlockMaterial />
+      <BlockMaterial color="#3e3e3e" />
     </Cylinder>
 
     <Sphere ref="core" :radius=".2">
@@ -19,7 +19,7 @@
       :height="20"
       :position="{ y: -10.5 }"
     >
-      <BlockMaterial />
+      <BlockMaterial color="#3e3e3e" />
     </Cylinder>
 
     <Ring ref="ring"
@@ -29,7 +29,7 @@
       :phi-segments="1"
       :rotation="{ x: -Math.PI / 2, y: 0, z: 0 }"
     >
-      <BasicMaterial />
+      <BasicMaterial color="#3e3e3e" />
     </Ring>
 
     <Service ref="services"
@@ -97,9 +97,9 @@ export default defineComponent({
   methods: {
     getServicePosition (index) {
       const count = this.services.length
-      const x = Math.sin((Math.TAU / count) * index) * (this.radius - 1)
-      const y = .5
-      const z = Math.cos((Math.TAU / count) * index) * (this.radius - 1)
+      const x = Math.sin((Math.TAU / count) * index) * (this.radius - 1.5)
+      const y = -.25
+      const z = Math.cos((Math.TAU / count) * index) * (this.radius - 1.5)
 
       return { x, y, z}
     }

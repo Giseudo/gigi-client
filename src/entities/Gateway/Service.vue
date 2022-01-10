@@ -15,19 +15,20 @@
     </Text>
 
     <Box ref="box"
-      :scale="{ x: .5, y: 2, z: .05 }"
+      :scale="{ x: .5, y: 1.5, z: .05 }"
       @click="onClick"
     >
       <BlockMaterial />
     </Box>
 
 
-    <Box ref="screen"
-      :scale="{ x: 0, y: 0, z: 0 }"
-      :position="{ y: .75, z: .05 }"
+    <Plane ref="screen"
+      :scale="{ x: 0, y: 0, z: 1 }"
+      :position="{ y: 1.2, z: .05 }"
+      :rotation="{ x: -Math.PI / 8 }"
     >
       <ProjectionMaterial />
-    </Box>
+    </Plane>
   </Group>
 </template>
 
@@ -78,7 +79,7 @@ export default defineComponent({
 
       anime({
         targets: text.mesh.position,
-        y: value ? -.25 : .5,
+        y: value ? 0 : .5,
         duration: 300,
         easing: 'easeOutQuad'
       })
@@ -87,9 +88,8 @@ export default defineComponent({
         targets: screen.mesh.scale,
         x: value ? 2 : 0,
         y: value ? 1.25 : 0,
-        z: value ? .05 : 0,
-        duration: 500,
-        easing: 'easeOutQuad'
+        duration: 300,
+        easing: value ? 'easeInQuad' : 'easeOutQuad'
       })
     }
   },

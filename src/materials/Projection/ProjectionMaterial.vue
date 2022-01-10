@@ -6,7 +6,7 @@
 
 <script>
 import { defineComponent } from 'vue'
-import { Color } from 'three'
+import { Color, AdditiveBlending } from 'three'
 import { useGame } from '@/store'
 import fragmentShader from './ProjectionFrag.glsl'
 import vertexShader from './ProjectionVert.glsl'
@@ -21,6 +21,9 @@ export default defineComponent({
       materialProps: {
         fragmentShader,
         vertexShader,
+        transparent: true,
+        depthWrite: false,
+        blending: AdditiveBlending,
         uniforms: {
           uTime: time,
           uBaseColor: {
