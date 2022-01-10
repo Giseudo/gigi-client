@@ -5,8 +5,8 @@
       :size=".25"
       :height="0"
       :font-src="font"
-      @click="onClick"
       @created="onLoadText"
+      @click="onClick"
     >
       <BasicMaterial
         color="#00ff00"
@@ -15,17 +15,17 @@
     </Text>
 
     <Box ref="box"
-      :scale="{ x: .5, y: 1.5, z: .05 }"
+      :scale="{ x: .5, y: 2, z: .05 }"
       @click="onClick"
     >
       <BlockMaterial />
     </Box>
 
-
     <Plane ref="screen"
       :scale="{ x: 0, y: 0, z: 1 }"
       :position="{ y: 1.2, z: .05 }"
       :rotation="{ x: -Math.PI / 8 }"
+      @click="onClick"
     >
       <ProjectionMaterial />
     </Plane>
@@ -79,9 +79,9 @@ export default defineComponent({
 
       anime({
         targets: text.mesh.position,
-        y: value ? 0 : .5,
+        y: value ? 2.25 : .5,
         duration: 300,
-        easing: 'easeOutQuad'
+        easing: value ? 'easeInQuad' : 'easeOutQuad'
       })
 
       anime({

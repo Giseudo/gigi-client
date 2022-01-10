@@ -6,11 +6,11 @@
       :height="20"
       :position="{ y: 10.5 }"
     >
-      <BlockMaterial color="#3e3e3e" />
+      <BlockMaterial color="#505050" />
     </Cylinder>
 
     <Sphere ref="core" :radius=".2">
-      <BlockMaterial />
+      <BlockMaterial color="#505050" />
     </Sphere>
 
     <Cylinder
@@ -19,17 +19,17 @@
       :height="20"
       :position="{ y: -10.5 }"
     >
-      <BlockMaterial color="#3e3e3e" />
+      <BlockMaterial color="#505050" />
     </Cylinder>
 
-    <Ring ref="ring"
+    <Ring ref="path"
       :outer-radius="radius"
       :inner-radius="radius - .5"
       :theta-segments="64"
       :phi-segments="1"
       :rotation="{ x: -Math.PI / 2, y: 0, z: 0 }"
     >
-      <BasicMaterial color="#3e3e3e" />
+      <ShaderMaterial :props="pathMaterialProps" />
     </Ring>
 
     <Service ref="services"
@@ -46,7 +46,11 @@
 import { defineComponent, ref } from 'vue'
 import { Vector3 } from 'three'
 import { BlockMaterial } from '@/materials'
+import { useGame } from '@/store'
 import Service from './Service'
+
+import fragmentShader from './PathFrag.glsl'
+import vertexShader from './PathVert.glsl'
 
 export default defineComponent({
   name: 'Gateway',
@@ -59,10 +63,18 @@ export default defineComponent({
   },
   
   setup () {
+    const { time } = useGame()
     const transform = ref(null)  
+    const pathMaterialProps = {
+      fragmentShader,
+      vertexShader,
+      transparent: true,
+      uniforms: { uTime: time }
+    }
 
     return {
-      transform
+      transform,
+      pathMaterialProps
     }
   },
 
@@ -98,7 +110,7 @@ export default defineComponent({
     getServicePosition (index) {
       const count = this.services.length
       const x = Math.sin((Math.TAU / count) * index) * (this.radius - 1.5)
-      const y = -.25
+      const y = -.75
       const z = Math.cos((Math.TAU / count) * index) * (this.radius - 1.5)
 
       return { x, y, z}
