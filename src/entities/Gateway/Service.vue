@@ -22,7 +22,7 @@
     </Box>
 
     <Plane ref="screen"
-      :scale="{ x: 0, y: 0, z: 1 }"
+      :scale="{ x: 0, y: .02, z: 1 }"
       :position="{ y: 2, z: .5 }"
       :rotation="{ x: -Math.PI / 8 }"
       @click="onClick"
@@ -79,13 +79,16 @@ export default defineComponent({
     isActive (value) {
       const { screen } = this.$refs
 
-      anime({
+      const width = { x: value ? 2.5 : 0 }
+      const height = { y: value ? 1.5 : .02 }
+
+      anime.timeline({
         targets: screen.mesh.scale,
-        x: value ? 2.5 : 0,
-        y: value ? 1.5 : 0,
-        duration: 300,
+        duration: 150,
         easing: value ? 'easeInQuad' : 'easeOutQuad'
       })
+        .add(value ? width : height)
+        .add(value ? height : width)
 
       this.$emit('toggle', { active: value, port: this.port })
     }
@@ -127,7 +130,7 @@ export default defineComponent({
       const userDirection = userPosition.clone()
         .sub(this.transform.group.position)
         .normalize()
-      const inFrontOf = userDirection.dot(this.direction) > .5
+      const inFrontOf = userDirection.dot(this.direction) > .25
 
       this.isActive = inFrontOf
     },
