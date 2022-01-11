@@ -13,7 +13,7 @@ float noise(vec2 co){
 }
 
 void main() {
-  float scanline = sin(vUv.y * 300.0 - uTime * 30.0);
+  float scanline = sin(vUv.y * 500.0 - uTime * 10.0);
   float randomizer = noise(vec2(sin(uTime)));
   float scannoise = randomizer * 0.005;
   vec2 offset = vec2(scannoise * scanline, 0.0);
@@ -24,11 +24,17 @@ void main() {
   baseColor -= sin(uTime * 100. + fract(vUv.y * 2.)) * .02;
   baseColor -= scanline * .02;
 
-  float alpha = 1. - scanline * .1;
-
-  vec2 center = vec2(.5);
+  vec2 center = vec2(.5, .75);
   float vignet = 1. - distance(vUv, center);
-  baseColor *= vignet;
+  float alpha = 1.;
+
+  if (uv.x > .99 || uv.x < .01) alpha = 0.;
+  baseColor *= alpha;
+
+  alpha *= vignet * 1.2;
+
+  float fade = smoothstep(1., .5, vUv.y);
+  alpha *= fade;
 
   gl_FragColor = vec4(baseColor, alpha);
 }

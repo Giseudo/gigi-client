@@ -23,7 +23,7 @@ export default defineComponent({
         vertexShader,
         transparent: true,
         depthWrite: false,
-        blending: AdditiveBlending,
+        premultipliedAlpha: true,
         uniforms: {
           uTime: time,
           uBaseColor: {

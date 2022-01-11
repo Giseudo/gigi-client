@@ -1,21 +1,23 @@
 <template>
   <Group ref="transform" :position="position">
-    <Text ref="text"
-      :text="`:${port}`"
-      :size=".25"
-      :height="0"
-      :font-src="font"
-      @created="onLoadText"
-      @click="onClick"
-    >
-      <BasicMaterial
-        color="#ffff00"
-        :props="{ opacity: .8, transparent: true, blending: 2 }"
-      />
-    </Text>
+    <Group ref="text" :position="{ y: .5 }">
+      <Text
+        :text="`:${port}`"
+        :size=".3"
+        :height="0"
+        :font-src="font"
+        @created="onLoadText"
+        @click="onClick"
+      >
+        <BasicMaterial
+          color="#ffff00"
+        />
+      </Text>
+    </Group>
 
     <Box ref="box"
-      :scale="{ x: .5, y: 2, z: .1 }"
+      :position="{ y: 0 }"
+      :scale="{ x: .75, y: 3, z: .1 }"
       @click="onClick"
     >
       <BlockMaterial :displace="{ x: 0, y: 0, z: .05 }" />
@@ -23,11 +25,11 @@
 
     <Plane ref="screen"
       :scale="{ x: 0, y: .02, z: 1 }"
-      :position="{ y: 2, z: .5 }"
+      :position="{ y: 3.5, z: .5 }"
       :rotation="{ x: -Math.PI / 8 }"
       @click="onClick"
     >
-      <ProjectionMaterial />
+      <ProjectionMaterial :texture="thumbnail" />
     </Plane>
   </Group>
 </template>
@@ -72,23 +74,47 @@ export default defineComponent({
     position: {
       type: [ Vector3, Object ],
       default: () => ({ x: 0, y: 0, z: 0 })
+    },
+
+    thumbnail: {
+      type: String,
+      default: '/images/megaman-legends.jpg'
     }
   },
 
   watch: {
     isActive (value) {
-      const { screen } = this.$refs
+      const { screen, text } = this.$refs
 
-      const width = { x: value ? 2.5 : 0 }
-      const height = { y: value ? 1.5 : .02 }
+      const width = { x: value ? 4 : 0 }
+      const height = { y: value ? 3 : .02 }
+      const scale = value ? 2. : 1.
+      const easing = value ? 'easeInQuad' : 'easeOutQuad'
 
       anime.timeline({
         targets: screen.mesh.scale,
         duration: 150,
-        easing: value ? 'easeInQuad' : 'easeOutQuad'
+        easing
       })
         .add(value ? width : height)
         .add(value ? height : width)
+
+      anime({
+        targets: text.group.position,
+        y: value ? 1. : .5,
+        z: value ? .5 : .25,
+        duration: 200,
+        easing
+      })
+
+      anime({
+        targets: text.group.scale,
+        x: scale,
+        y: scale,
+        z: scale,
+        duration: 200,
+        easing
+      })
 
       this.$emit('toggle', { active: value, port: this.port })
     }
@@ -120,7 +146,6 @@ export default defineComponent({
       const width = boundingBox.max.x - boundingBox.min.x
 
       mesh.position.x -= width / 2
-      mesh.position.y = .5
       mesh.position.z = .25
 
       this.init()
@@ -130,7 +155,7 @@ export default defineComponent({
       const userDirection = userPosition.clone()
         .sub(this.transform.group.position)
         .normalize()
-      const inFrontOf = userDirection.dot(this.direction) > .25
+      const inFrontOf = userDirection.dot(this.direction) > .5
 
       this.isActive = inFrontOf
     },

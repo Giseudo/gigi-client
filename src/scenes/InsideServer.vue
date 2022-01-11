@@ -1,8 +1,12 @@
 <template>
-  <Gateway
+  <Gateway ref="gateway"
     :radius="radius"
     :services="services"
-    @service-access="onAccessServer"
+    :position="gatewayPosition"
+    @access-service="onAccessService"
+    @toggle-service="onToggleService"
+    @previous="onSelectService"
+    @next="onSelectService"
   />
 
   <UserAgent ref="user" />
@@ -23,6 +27,8 @@ import { UserAgent } from '@/entities/UserAgent'
 import { GTouchStick } from '@/components'
 import { SkyboxMaterial } from '@/materials'
 import anime from 'animejs'
+
+const FORWARD = new Vector3(0, 0, -1)
 
 export default defineComponent({
   name: 'InsideServer',
@@ -50,17 +56,21 @@ export default defineComponent({
   },
 
   data: () => ({
-    radius: 8,
+    radius: 12,
     displacement: 0,
+    animation: {
+      cameraDistance: 12 + 5
+    },
+    gatewayPosition: new Vector3(),
     services: [
-      { port: 7000 },
-      { port: 2375 },
-      { port: 5000 },
-      { port: 3366 },
-      { port: 7001 },
-      { port: 2376 },
-      { port: 5001 },
-      { port: 3367 },
+      { port: 7000, name: 'Playground', thumbnail: '/images/placeholder.png' },
+      { port: 3366, name: 'Database', thumbnail: '/images/database.webp' },
+      { port: 2375, name: 'Registry', thumbnail: '/images/placeholder.png' },
+      { port: 5000, name: 'Storage', thumbnail: '/images/placeholder.png' },
+      { port: 7001, name: 'Playground', thumbnail: '/images/megaman-legends.jpg' },
+      { port: 2376, name: 'Register Office', thumbnail: '/images/megaman-legends.jpg' },
+      { port: 5001, name: 'Resources', thumbnail: '/images/placeholder.png' },
+      { port: 3367, name: 'Database', thumbnail: '/images/database.webp' },
     ],
   }),
 
@@ -85,11 +95,34 @@ export default defineComponent({
   },
 
   methods: {
-    onAccessServer (server) {
-      console.log('accessed server on port', server.port)
+    onAccessService (service) {
+      console.log('accessed servervice on port', service.port)
 
-      if (server.port === 7000)
+      if (service.port === 7000)
         this.$router.push({ name: 'Playground' })
+    },
+
+    onToggleService (service) {
+      anime.remove(this.animation)
+
+      anime({
+        targets: this.animation,
+        cameraDistance: this.radius + (service ? 6 : 5),
+        duration: service ? 700 : 1500,
+        easing: 'easeOutQuad',
+      })
+    },
+
+    onSelectService (service) {
+      const count = this.services.length
+      const index = this.services.indexOf(service)
+
+      anime({
+        targets: this,
+        displacement: (Math.TAU / count) * index,
+        duration: 1000,
+        easing: 'easeInOutQuad'
+      })
     },
 
     onTouchMove (direction) {
@@ -99,19 +132,40 @@ export default defineComponent({
     onUpdate () {
       const { user } = this.$refs
 
-      this.displacement += this.axis.x
+      this.displacement += this.axis.x * (this.deltaTime / 3)
 
-      const t = this.displacement * (this.deltaTime / 2)
+      const t = this.displacement
 
-      user.transform.position.x = Math.sin(t) * (this.radius - .25)
-      user.transform.position.z = Math.cos(t) * (this.radius - .25)
-      user.transform.rotation.copy(this.camera.rotation)
+      user.transform.position.x = Math.sin(t) * (this.radius - .5)
+      user.transform.position.z = Math.cos(t) * (this.radius - .5)
 
-      this.camera.position.x = Math.sin(t) * (this.radius + 3)
-      this.camera.position.z = Math.cos(t) * (this.radius + 3)
-      this.camera.lookAt(
-        new Vector3(Math.sin(t) * (this.radius - 3), 0, Math.cos(t) * (this.radius - 3))
-      )
+      if (this.axis.x !== 0 || this.axis.y !== 0) {
+        const targetPosition = this.getOrientedAxis(this.axis)
+          .add(user.transform.position)
+
+        user.transform.lookAt(targetPosition)
+      }
+
+      this.camera.position.x = Math.sin(t) * this.animation.cameraDistance
+      this.camera.position.z = Math.cos(t) * this.animation.cameraDistance
+      this.camera.lookAt(this.gatewayPosition)
+    },
+
+    getOrientedAxis (direction) {
+      if (!this.camera) return direction
+
+      const right = new Vector3(1, 0, 0)
+        .applyQuaternion(this.camera.quaternion)
+      right.y = 0
+      right.normalize()
+
+      const forward = new Vector3(0, 0, -1)
+        .applyQuaternion(this.camera.quaternion)
+      forward.y = 0
+      forward.normalize()
+
+      return right.multiplyScalar(direction.x)
+        .add(forward.multiplyScalar(direction.y))
     }
   }
 })

@@ -1,29 +1,43 @@
 <template>
   <Group ref="transform">
-    <Box ref="pyramid"
-      :position="{ y: 0.1 }"
-      :scale="{ x: .2, y: .2, z: .2 }"
-    >
-      <BasicMaterial color="#ff0000" />
-    </Box>
+    <FbxModel
+      src="/meshes/PlayerModel.fbx"
+      @load="onLoad"
+    />
   </Group>
 </template>
 
 <script>
 import { defineComponent, ref, onMounted } from 'vue'
+import { BlockShaderMaterial } from '@/materials'
 
 export default defineComponent({
   name: 'UserAgent',
 
   setup () {
     const transform = ref(null)
+    const material = ref(new BlockShaderMaterial())
 
     onMounted(() => {
       transform.value = transform.value.group
     })
 
     return {
-      transform
+      transform,
+      material
+    }
+  },
+
+  methods: {
+    onLoad (mesh) {
+      mesh.traverse(node => {
+        if (!node.isMesh) return
+
+        node.material.dispose()
+        node.material = this.material
+      })
+
+      this.$emit('load', mesh)
     }
   }
 })
