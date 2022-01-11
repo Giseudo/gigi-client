@@ -58,9 +58,7 @@ export default defineComponent({
   data: () => ({
     radius: 12,
     displacement: 0,
-    animation: {
-      cameraDistance: 12 + 5
-    },
+    isAnimating: false,
     gatewayPosition: new Vector3(),
     services: [
       { port: 7000, name: 'Playground', thumbnail: '/images/placeholder.png' },
@@ -103,25 +101,31 @@ export default defineComponent({
     },
 
     onToggleService (service) {
-      anime.remove(this.animation)
+      anime.remove(this.camera)
 
       anime({
-        targets: this.animation,
-        cameraDistance: this.radius + (service ? 6 : 5),
-        duration: service ? 700 : 1500,
+        targets: this.camera,
+        fov: service ? 75 : 60,
+        duration: service ? 1000 : 2000,
         easing: 'easeOutQuad',
+        update: () => this.camera.updateProjectionMatrix()
       })
     },
 
     onSelectService (service) {
+      if (this.isAnimating) return
+
       const count = this.services.length
       const index = this.services.indexOf(service)
+
+      this.isAnimating = true
 
       anime({
         targets: this,
         displacement: (Math.TAU / count) * index,
         duration: 1000,
-        easing: 'easeInOutQuad'
+        easing: 'easeInOutQuad',
+        complete: () => this.isAnimating = false
       })
     },
 
@@ -146,8 +150,8 @@ export default defineComponent({
         user.transform.lookAt(targetPosition)
       }
 
-      this.camera.position.x = Math.sin(t) * this.animation.cameraDistance
-      this.camera.position.z = Math.cos(t) * this.animation.cameraDistance
+      this.camera.position.x = Math.sin(t) * (this.radius + 5.)
+      this.camera.position.z = Math.cos(t) * (this.radius + 5.)
       this.camera.lookAt(this.gatewayPosition)
     },
 
