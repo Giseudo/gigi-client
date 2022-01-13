@@ -6,7 +6,7 @@
 
 <script>
 import { defineComponent } from 'vue'
-import { Color, AdditiveBlending } from 'three'
+import { Color } from 'three'
 import { useGame } from '@/store'
 import fragmentShader from './ProjectionFrag.glsl'
 import vertexShader from './ProjectionVert.glsl'

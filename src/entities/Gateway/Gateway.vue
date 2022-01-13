@@ -65,7 +65,7 @@
 </template>
 
 <script>
-import { defineComponent, ref, onMounted } from 'vue'
+import { defineComponent, ref } from 'vue'
 import { Vector3, RingBufferGeometry } from 'three'
 import { BlockMaterial } from '@/materials'
 import { useGame } from '@/store'

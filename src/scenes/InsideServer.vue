@@ -28,7 +28,7 @@ import { GTouchStick } from '@/components'
 import { SkyboxMaterial } from '@/materials'
 import anime from 'animejs'
 
-const FORWARD = new Vector3(0, 0, -1)
+// const FORWARD = new Vector3(0, 0, -1)
 
 export default defineComponent({
   name: 'InsideServer',
