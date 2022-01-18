@@ -1,8 +1,8 @@
 <template>
-  <Renderer ref="renderer" resize="window">
+  <Renderer ref="renderer" resize="window" >
     <Camera :fov="60" />
     <Scene>
-      <RouterView />
+      <RouterView v-if="!isLoading" />
     </Scene>
      <EffectComposer>
       <RenderPass />
@@ -32,8 +32,20 @@ export default defineComponent({
     }
   },
 
+  data: () => ({
+    isLoading: true
+  }),
+
   mounted () {
-    this.login('7d762570-760d-11ec-a915-ef8a0b584cc1')
+    this.init()
+  },
+
+  methods: {
+    async init () {
+      await this.login('7d762570-760d-11ec-a915-ef8a0b584cc1')
+
+      this.isLoading = false
+    }
   }
 })
 </script>

@@ -11,7 +11,7 @@ export default {
     const { token } = useAuthService()
 
     if (token)
-      headers['Authorization'] = `Bearer ${token}`
+      headers['Authorization'] = `Bearer ${token.value}`
 
     const options = {
       method,
@@ -29,11 +29,10 @@ export default {
     // TODO handle errors (maybe create a logger module?)
     const body = await response.json()
 
-    return body
+    return { response, body }
   },
 
   async get (url, headers) {
-    console.log(url)
     return await this.request(url, 'GET', headers)
   },
 

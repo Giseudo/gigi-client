@@ -132,7 +132,7 @@ export default defineComponent({
     const up = new Vector3(0, 1, 0)
     const target = core.mesh.position.clone()
 
-    for (let i = 0; i < services.length; i++) {
+    for (let i = 0; i < services?.length; i++) {
       const service = services[i].transform.group
       target.y = service.position.y
 

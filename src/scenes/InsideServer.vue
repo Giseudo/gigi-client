@@ -1,7 +1,8 @@
 <template>
   <Gateway ref="gateway"
+    v-if="!isLoading"
     :radius="radius"
-    :services="services"
+    :services="microservices"
     :position="gatewayPosition"
     @access-service="onAccessService"
     @toggle-service="onToggleService"
@@ -22,6 +23,7 @@
 import { defineComponent } from 'vue'
 import { Vector3 } from 'three'
 import { useGame, useInput, useNavigator } from '@/store'
+import { useMicroserviceService } from '@/services'
 import { Gateway } from '@/entities/Gateway'
 import { UserAgent } from '@/entities/UserAgent'
 import { GTouchStick } from '@/components'
@@ -44,6 +46,7 @@ export default defineComponent({
     const { camera, renderer, deltaTime } = useGame()
     const { axis, setPrimaryAxis } = useInput()
     const { connectUserAgent } = useNavigator()
+    const { list, microservices } = useMicroserviceService()
 
     return {
       deltaTime,
@@ -52,14 +55,18 @@ export default defineComponent({
       axis,
       setPrimaryAxis,
       connectUserAgent,
+      microservices,
+      listMicroservices: list
     }
   },
 
   data: () => ({
     radius: 12,
     displacement: 0,
+    isLoading: true,
     isAnimating: false,
     gatewayPosition: new Vector3(),
+    /*
     services: [
       { port: 7000, name: 'Playground', thumbnail: '/images/placeholder.png' },
       { port: 3366, name: 'Database', thumbnail: '/images/database.webp' },
@@ -70,22 +77,11 @@ export default defineComponent({
       { port: 5001, name: 'Resources', thumbnail: '/images/placeholder.png' },
       { port: 3367, name: 'Database', thumbnail: '/images/database.webp' },
     ],
+    */
   }),
 
   mounted () {
-    const { user } = this.$refs
-
-    this.connectUserAgent(user.transform)
-
-    anime({
-      targets: this.camera.position,
-      z: 10,
-      y: 3,
-      duration: 1000,
-      easing: 'easeOutQuad'
-    })
-
-    this.renderer.onBeforeRender(this.onUpdate)
+    this.init()
   },
 
   unmounted () {
@@ -93,6 +89,26 @@ export default defineComponent({
   },
 
   methods: {
+    async init () {
+      const { user } = this.$refs
+
+      await this.listMicroservices()
+
+      this.connectUserAgent(user.transform)
+
+      anime({
+        targets: this.camera.position,
+        z: 10,
+        y: 3,
+        duration: 1000,
+        easing: 'easeOutQuad'
+      })
+
+      this.renderer.onBeforeRender(this.onUpdate)
+
+      this.isLoading = false
+    },
+
     onAccessService (service) {
       console.log('accessed servervice on port', service.port)
 
@@ -117,8 +133,8 @@ export default defineComponent({
     onSelectService (service) {
       if (this.isAnimating) return
 
-      const count = this.services.length
-      const index = this.services.indexOf(service)
+      const count = this.microservices.length
+      const index = this.microservices.indexOf(service)
 
       this.isAnimating = true
 
