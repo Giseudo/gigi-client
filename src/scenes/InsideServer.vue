@@ -1,8 +1,7 @@
 <template>
   <Gateway ref="gateway"
-    v-if="!isLoading"
     :radius="radius"
-    :services="microservices"
+    :services="services"
     :position="gatewayPosition"
     @access-service="onAccessService"
     @toggle-service="onToggleService"
@@ -23,7 +22,7 @@
 import { defineComponent } from 'vue'
 import { Vector3 } from 'three'
 import { useGame, useInput, useNavigator } from '@/store'
-import { useMicroserviceService } from '@/services'
+import { useGatewayService } from '@/services'
 import { Gateway } from '@/entities/Gateway'
 import { UserAgent } from '@/entities/UserAgent'
 import { GTouchStick } from '@/components'
@@ -46,7 +45,7 @@ export default defineComponent({
     const { camera, renderer, deltaTime } = useGame()
     const { axis, setPrimaryAxis } = useInput()
     const { connectUserAgent } = useNavigator()
-    const { list, microservices } = useMicroserviceService()
+    const { fetchServices, services } = useGatewayService()
 
     return {
       deltaTime,
@@ -55,8 +54,8 @@ export default defineComponent({
       axis,
       setPrimaryAxis,
       connectUserAgent,
-      microservices,
-      listMicroservices: list
+      services,
+      fetchServices,
     }
   },
 
@@ -66,18 +65,6 @@ export default defineComponent({
     isLoading: true,
     isAnimating: false,
     gatewayPosition: new Vector3(),
-    /*
-    services: [
-      { port: 7000, name: 'Playground', thumbnail: '/images/placeholder.png' },
-      { port: 3366, name: 'Database', thumbnail: '/images/database.webp' },
-      { port: 2375, name: 'Registry', thumbnail: '/images/placeholder.png' },
-      { port: 5000, name: 'Storage', thumbnail: '/images/placeholder.png' },
-      { port: 7001, name: 'Playground', thumbnail: '/images/megaman-legends.jpg' },
-      { port: 2376, name: 'Register Office', thumbnail: '/images/megaman-legends.jpg' },
-      { port: 5001, name: 'Resources', thumbnail: '/images/placeholder.png' },
-      { port: 3367, name: 'Database', thumbnail: '/images/database.webp' },
-    ],
-    */
   }),
 
   mounted () {
@@ -92,7 +79,7 @@ export default defineComponent({
     async init () {
       const { user } = this.$refs
 
-      await this.listMicroservices()
+      await this.fetchServices()
 
       this.connectUserAgent(user.transform)
 
@@ -133,8 +120,8 @@ export default defineComponent({
     onSelectService (service) {
       if (this.isAnimating) return
 
-      const count = this.microservices.length
-      const index = this.microservices.indexOf(service)
+      const count = this.services.length
+      const index = this.services.indexOf(service)
 
       this.isAnimating = true
 

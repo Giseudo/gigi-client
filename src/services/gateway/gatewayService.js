@@ -1,8 +1,8 @@
 import http from '@/http'
 
 export default {
-  async list () {
-    const { response, body } = await http.get('/microservices')
+  async fetch () {
+    const { response, body } = await http.get('/services')
     const error = response.status >= 300
 
     return [ error, body ]

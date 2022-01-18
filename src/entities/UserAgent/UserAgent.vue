@@ -1,7 +1,7 @@
 <template>
   <Group ref="transform">
     <FbxModel
-      src="/meshes/PlayerModel.fbx"
+      src="/meshes/player.fbx"
       @load="onLoad"
     />
   </Group>

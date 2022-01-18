@@ -199,7 +199,7 @@ export default defineComponent({
     font-family: Helvetica, Arial;
     color: white;
     text-align: center;
-    text-transform: uppercase;
+    text-transform: lowercase;
     font-weight: 600;
     background: linear-gradient(to bottom, rgba(black, .7) 0%, rgba(black, 0) 100%);
     padding: 40px 0 120px 0;
