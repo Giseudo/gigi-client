@@ -1,5 +1,6 @@
 varying vec2 vUv;
 varying vec3 vNormal;
+varying vec3 vWorldNormal;
 
 uniform float time;
 uniform vec3 color;
@@ -10,7 +11,7 @@ void main() {
   float t = (time / 2.);
   float y = frac(t + vNormal.y * 6.);
   float l = ((sin(time * 60.) * .5) + .5) * .1;
-  float z = pow(.02, vNormal.z);
+  float z = pow(.02, vWorldNormal.z);
 
   y += l;
   y -= .9;

@@ -100,7 +100,8 @@ export default defineComponent({
         this.$router.push({ name: 'Playground' })
     },
 
-    onToggleService (service) {
+    onToggleService () {
+      /*
       anime.remove(this.camera)
 
       anime({
@@ -110,6 +111,7 @@ export default defineComponent({
         easing: 'easeOutQuad',
         update: () => this.camera.updateProjectionMatrix()
       })
+      */
     },
 
     onSelectService (service) {
@@ -123,7 +125,7 @@ export default defineComponent({
       anime({
         targets: this,
         displacement: (Math.TAU / count) * index,
-        duration: 1000,
+        duration: 2000,
         easing: 'easeInOutQuad',
         complete: () => this.isAnimating = false
       })

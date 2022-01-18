@@ -14,10 +14,12 @@
 <script>
 import { defineComponent } from 'vue'
 import { initGame, initPointer, initWindow, initNavigator, initInput } from './store'
+import { useAuthService } from './services/auth'
 
 export default defineComponent({
   setup () {
     const { renderer } = initGame()
+    const { login } = useAuthService()
 
     initWindow()
     initNavigator()
@@ -25,11 +27,13 @@ export default defineComponent({
     initInput()
 
     return {
-      renderer
+      renderer,
+      login,
     }
   },
 
   mounted () {
+    this.login('7d762570-760d-11ec-a915-ef8a0b584cc1')
   }
 })
 </script>
