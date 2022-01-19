@@ -1,7 +1,7 @@
 <template>
   <Group ref="transform">
     <FbxModel
-      src="/meshes/player.fbx"
+      :src="model"
       @load="onLoad"
     />
   </Group>
@@ -27,6 +27,10 @@ export default defineComponent({
       material
     }
   },
+
+  data: () => ({
+    model: process.env.VUE_APP_PUBLIC_URL + '/meshes/player.fbx'
+  }),
 
   methods: {
     onLoad (mesh) {

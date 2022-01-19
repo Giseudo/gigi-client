@@ -1,5 +1,6 @@
 <template>
   <Gateway ref="gateway"
+    v-if="!isLoading"
     :radius="radius"
     :services="services"
     :position="gatewayPosition"

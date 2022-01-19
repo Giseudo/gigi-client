@@ -91,6 +91,7 @@ export default defineComponent({
       fragmentShader,
       vertexShader,
       transparent: true,
+      depthWrite: false,
       blending: 2,
       uniforms: { uTime: time }
     }
@@ -193,7 +194,7 @@ export default defineComponent({
     position: absolute;
     left: 0;
     right: 0;
-    top: 0;
+    bottom: 0;
     font-size: 32px;
     letter-spacing: 3px;
     font-family: Helvetica, Arial;
@@ -201,8 +202,8 @@ export default defineComponent({
     text-align: center;
     text-transform: lowercase;
     font-weight: 600;
-    background: linear-gradient(to bottom, rgba(black, .7) 0%, rgba(black, 0) 100%);
-    padding: 40px 0 120px 0;
+    background: linear-gradient(to top, rgba(black, .7) 0%, rgba(black, 0) 100%);
+    padding: 120px 0 40px 0;
     pointer-events: none;
   }
 

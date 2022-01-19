@@ -4,7 +4,10 @@ import gatewayService from './gatewayService'
 const services = ref([])
 
 const getServices = computed(() => services.value)
-const setServices = value => services.value = [ ...value ]
+const setServices = value => services.value = value.map(service => ({
+  ...service,
+  thumbnail: process.env.VUE_APP_PUBLIC_URL + '/textures/services/' + service.thumbnail
+}))
 
 const fetchServices = async () => {
   const [ error, data ] = await gatewayService.fetch()

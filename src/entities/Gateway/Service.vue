@@ -23,21 +23,26 @@
       <BlockMaterial :displace="{ x: 0, y: 0, z: .05 }" />
     </Box>
 
-    <Plane ref="screen"
+    <Group ref="screen"
       :scale="{ x: 0, y: .02, z: 1 }"
       :position="{ y: 3.5, z: .5 }"
       :rotation="{ x: -Math.PI / 8 }"
-      @click="onClick"
     >
-      <ProjectionMaterial :texture="thumbnail" />
-    </Plane>
+      <Plane @click="onClick">
+        <ProjectionMaterial :texture="thumbnail" />
+      </Plane>
+
+      <Plane ref="loader" :scale="{ x: .5, y: .65 }">
+        <LoaderMaterial />
+      </Plane>
+    </Group>
   </Group>
 </template>
 
 <script>
 import { defineComponent, ref } from 'vue'
 import { Vector3 } from 'three'
-import { BlockMaterial, ProjectionMaterial } from '@/materials'
+import { BlockMaterial, ProjectionMaterial, LoaderMaterial } from '@/materials'
 import { useNavigator, useGame } from '@/store'
 import anime from 'animejs'
 
@@ -48,7 +53,8 @@ export default defineComponent({
 
   components: {
     ProjectionMaterial,
-    BlockMaterial
+    BlockMaterial,
+    LoaderMaterial
   },
   
   setup () {
@@ -92,7 +98,7 @@ export default defineComponent({
       const easing = value ? 'easeInQuad' : 'easeOutQuad'
 
       anime.timeline({
-        targets: screen.mesh.scale,
+        targets: screen.group.scale,
         duration: 150,
         easing
       })
