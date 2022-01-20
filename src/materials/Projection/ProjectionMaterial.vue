@@ -1,6 +1,10 @@
 <template>
   <ShaderMaterial :props="materialProps">
-    <Texture :src="texture" uniform="uMainTex"/>
+    <Texture
+      uniform="uMainTex"
+      :src="texture"
+      @load="onLoad"
+    />
   </ShaderMaterial>
 </template>
 
@@ -13,6 +17,8 @@ import vertexShader from './ProjectionVert.glsl'
 
 export default defineComponent({
   name: 'ProjectionMaterial',
+
+  emits: [ 'load' ],
   
   setup (props) {
     const { time } = useGame()
@@ -26,10 +32,8 @@ export default defineComponent({
         premultipliedAlpha: true,
         uniforms: {
           uTime: time,
-          uBaseColor: {
-            type: 'v3',
-            value: new Color(props.color)
-          }
+          uFade: { value: 1. },
+          uBaseColor: { value: new Color(props.color) }
         }
       }
     }
@@ -44,6 +48,12 @@ export default defineComponent({
     texture: {
       type: String,
       default: '/images/megaman-legends.jpg'
+    }
+  },
+
+  methods: {
+    onLoad (texture) {
+      this.$emit('load', texture)
     }
   }
 })

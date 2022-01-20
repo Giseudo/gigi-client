@@ -28,12 +28,10 @@
       :position="{ y: 3.5, z: .5 }"
       :rotation="{ x: -Math.PI / 8 }"
     >
-      <Plane @click="onClick">
-        <ProjectionMaterial :texture="thumbnail" />
-      </Plane>
+      <Spinner :scale="{ x: 2.5, y: 2.5 }" :is-loading="isLoading" />
 
-      <Plane ref="loader" :scale="{ x: .5, y: .65 }">
-        <LoaderMaterial />
+      <Plane :position="{ z: -.01 }" :scale="{ x: 4, y: 3 }" @click="onClick">
+        <ProjectionMaterial ref="screenMaterial" :texture="thumbnail" />
       </Plane>
     </Group>
   </Group>
@@ -42,8 +40,9 @@
 <script>
 import { defineComponent, ref } from 'vue'
 import { Vector3 } from 'three'
-import { BlockMaterial, ProjectionMaterial, LoaderMaterial } from '@/materials'
+import { BlockMaterial, ProjectionMaterial } from '@/materials'
 import { useNavigator, useGame } from '@/store'
+import { Spinner } from '@/entities/Spinner'
 import anime from 'animejs'
 
 export default defineComponent({
@@ -54,7 +53,7 @@ export default defineComponent({
   components: {
     ProjectionMaterial,
     BlockMaterial,
-    LoaderMaterial
+    Spinner,
   },
   
   setup () {
@@ -90,10 +89,10 @@ export default defineComponent({
 
   watch: {
     isActive (value) {
-      const { screen, text } = this.$refs
+      const { screen, text, screenMaterial } = this.$refs
 
-      const width = { x: value ? 4 : 0 }
-      const height = { y: value ? 3 : .02 }
+      const width = { x: value ? 1 : 0 }
+      const height = { y: value ? 1 : .02 }
       const scale = value ? 2. : 1.
       const easing = value ? 'easeInQuad' : 'easeOutQuad'
 
@@ -105,11 +104,22 @@ export default defineComponent({
         .add(value ? width : height)
         .add(value ? height : width)
 
+      console.log(screenMaterial)
+      screenMaterial.materialProps.uniforms.uFade.value = 1.
+
+      anime({
+        targets: screenMaterial.materialProps.uniforms.uFade,
+        value: 0.,
+        delay: 500,
+        duration: 150,
+        easing: 'linear',
+      })
+
       anime({
         targets: text.group.position,
-        y: value ? 1. : .5,
-        z: value ? .5 : .25,
-        duration: 200,
+        y: value ? .75 : .5,
+        z: value ? 1. : .25,
+        duration: 300,
         easing
       })
 
@@ -118,8 +128,9 @@ export default defineComponent({
         x: scale,
         y: scale,
         z: scale,
-        duration: 200,
-        easing
+        duration: 300,
+        easing,
+        complete: () => this.isLoading = !value
       })
 
       this.$emit('toggle', { active: value, port: this.port })
@@ -128,6 +139,7 @@ export default defineComponent({
 
   data: () => ({
     isActive: false,
+    isLoading: true,
     direction: { x: 0, y: 0, z: 0 },
     font: require('@/assets/fonts/V5XtenderRegular.font').default
   }),

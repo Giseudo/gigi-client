@@ -3,6 +3,7 @@ uniform vec3 uBaseColor;
 
 uniform sampler2D uMainTex;
 uniform float uTime;
+uniform float uFade;
 
 float frac(float v) {
   return v - floor(v);
@@ -30,11 +31,14 @@ void main() {
 
   if (uv.x > .99 || uv.x < .01) alpha = 0.;
   baseColor *= alpha;
+  baseColor = mix(baseColor, vec3(.9), uFade * alpha);
 
   alpha *= vignet * 1.2;
 
   float fade = smoothstep(1., .5, vUv.y);
   alpha *= fade;
+  
+  alpha -= uFade;
 
   gl_FragColor = vec4(baseColor, alpha);
 }

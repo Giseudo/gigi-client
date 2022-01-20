@@ -221,6 +221,7 @@ export default defineComponent({
     justify-content: center;
     border: 0;
     cursor: pointer;
+    opacity: 0;
 
     &--left { left: 20px; }
     &--right { right: 20px; }

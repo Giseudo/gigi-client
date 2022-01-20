@@ -6,11 +6,11 @@
 import { defineComponent } from 'vue'
 import { Color } from 'three'
 import { useGame } from '@/store'
-import fragmentShader from './LoaderFrag.glsl'
-import vertexShader from './LoaderVert.glsl'
+import fragmentShader from './SpinnerFrag.glsl'
+import vertexShader from './SpinnerVert.glsl'
 
 export default defineComponent({
-  name: 'LoaderMaterial',
+  name: 'SpinnerMaterial',
   
   setup (props) {
     const { time } = useGame()

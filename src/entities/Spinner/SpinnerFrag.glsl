@@ -12,7 +12,7 @@ void main() {
   vec2 polar = vec2(2. * radius, angle * .5 / PI + .5);
 
   float line = polar.y;
-  line = fract(line + uTime);
+  line = fract(line + uTime * 2.);
   line = step(0.5, line);
 
   float circle = polar.x;
