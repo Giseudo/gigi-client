@@ -41,7 +41,7 @@
 import { defineComponent, ref } from 'vue'
 import { Vector3 } from 'three'
 import { BlockMaterial, ProjectionMaterial } from '@/materials'
-import { useNavigator, useGame } from '@/store'
+import { useGatewayService } from '@/services'
 import { Spinner } from '@/entities/Spinner'
 import anime from 'animejs'
 
@@ -57,16 +57,18 @@ export default defineComponent({
   },
   
   setup () {
-    const { userAgent, subscribe, unsubscribe } = useNavigator()
-    const { renderer } = useGame()
+    // const { userAgent, subscribe, unsubscribe } = useNavigator()
+    // const { renderer } = useGame()
+    const { activePort } = useGatewayService()
     const transform = ref(null)
 
     return {
-      subscribe,
-      unsubscribe,
+      // subscribe,
+      // unsubscribe,
+      // renderer
+      // userAgent,
       transform,
-      userAgent,
-      renderer
+      activePort,
     }
   },
 
@@ -88,13 +90,15 @@ export default defineComponent({
   },
 
   watch: {
-    isActive (value) {
+    activePort (number) {
+      const value = number === this.port
       const { screen, text, screenMaterial } = this.$refs
-
+      const { uFade } = screenMaterial.materialProps.uniforms
       const width = { x: value ? 1 : 0 }
       const height = { y: value ? 1 : .02 }
-      const scale = value ? 2. : 1.
       const easing = value ? 'easeInQuad' : 'easeOutQuad'
+
+      uFade.value = 1.
 
       anime.timeline({
         targets: screen.group.scale,
@@ -104,11 +108,8 @@ export default defineComponent({
         .add(value ? width : height)
         .add(value ? height : width)
 
-      console.log(screenMaterial)
-      screenMaterial.materialProps.uniforms.uFade.value = 1.
-
       anime({
-        targets: screenMaterial.materialProps.uniforms.uFade,
+        targets: uFade,
         value: 0.,
         delay: 500,
         duration: 150,
@@ -120,14 +121,14 @@ export default defineComponent({
         y: value ? .75 : .5,
         z: value ? 1. : .25,
         duration: 300,
-        easing
+        easing,
       })
 
       anime({
         targets: text.group.scale,
-        x: scale,
-        y: scale,
-        z: scale,
+        x: value ? 2. : 1.,
+        y: value ? 2. : 1.,
+        z: value ? 2. : 1.,
         duration: 300,
         easing,
         complete: () => this.isLoading = !value
@@ -145,7 +146,7 @@ export default defineComponent({
   }),
 
   unmounted () {
-    this.unsubscribe('user-move', this.onUserMove)
+    // this.unsubscribe('user-move', this.onUserMove)
   },
 
   methods: {
@@ -154,7 +155,7 @@ export default defineComponent({
 
       this.direction = this.transform.group.getWorldDirection(forward)
 
-      this.subscribe('user-move', this.onUserMove)
+      // this.subscribe('user-move', this.onUserMove)
     },
 
     onLoadText (mesh) {
@@ -169,6 +170,7 @@ export default defineComponent({
       this.init()
     },
 
+    /*
     onUserMove ({ message: userPosition }) {
       const userDirection = userPosition.clone()
         .sub(this.transform.group.position)
@@ -177,6 +179,7 @@ export default defineComponent({
 
       this.isActive = inFrontOf
     },
+    */
 
     onClick () {
       if (!this.isActive) return

@@ -1,43 +1,51 @@
 <template>
-  <Gateway ref="gateway"
-    v-if="!isLoading"
-    :radius="radius"
-    :services="services"
-    :position="gatewayPosition"
-    @access-service="onAccessService"
-    @toggle-service="onToggleService"
-    @previous="onSelectService"
-    @next="onSelectService"
-  />
+  <div class="server-network">
+    <Gateway ref="gateway"
+      v-if="!isLoading"
+      :radius="radius"
+      :services="services"
+      :position="gatewayPosition"
+    />
 
-  <UserAgent ref="user" />
+    <Sphere :scale="{ x: 50, y: 50, z: 50 }">
+      <SkyboxMaterial />
+    </Sphere>
 
-  <GTouchStick @move="onTouchMove" />
+    <transition name="fade">
+      <span v-if="activePort" class="server-network__active-service">
+        {{ selectedService.name }}
+      </span>
+    </transition>
 
-  <Sphere :scale="{ x: 50, y: 50, z: 50 }">
-    <SkyboxMaterial />
-  </Sphere>
+    <button
+      class="server-network__arrow server-network__arrow--left"
+      @click="onPrevious"
+    >
+      Prev
+    </button>
+
+    <button
+      class="server-network__arrow server-network__arrow--right"
+      @click="onNext"
+    >
+      Next
+    </button>
+  </div>
 </template>
 
 <script>
 import { defineComponent } from 'vue'
 import { Vector3 } from 'three'
-import { useGame, useInput, useNavigator } from '@/store'
+import { useGame, useInput, useNavigator, usePointer, useWindow } from '@/store'
 import { useGatewayService } from '@/services'
 import { Gateway } from '@/entities/Gateway'
-import { UserAgent } from '@/entities/UserAgent'
-import { GTouchStick } from '@/components'
 import { SkyboxMaterial } from '@/materials'
 import anime from 'animejs'
-
-// const FORWARD = new Vector3(0, 0, -1)
 
 export default defineComponent({
   name: 'InsideServer',
 
   components: {
-    GTouchStick,
-    UserAgent,
     Gateway,
     SkyboxMaterial,
   },
@@ -46,9 +54,12 @@ export default defineComponent({
     const { camera, renderer, deltaTime } = useGame()
     const { axis, setPrimaryAxis } = useInput()
     const { connectUserAgent } = useNavigator()
-    const { fetchServices, services } = useGatewayService()
+    const { fetchServices, selectPort, services, activePort } = useGatewayService()
+    const { isMobile } = useWindow()
+    const { pointer } = usePointer()
 
     return {
+      pointer,
       deltaTime,
       renderer,
       camera,
@@ -56,40 +67,65 @@ export default defineComponent({
       setPrimaryAxis,
       connectUserAgent,
       services,
+      isMobile,
+      selectPort,
       fetchServices,
+      activePort,
     }
   },
 
   data: () => ({
     radius: 12,
     displacement: 0,
+    touchDelta: 0,
     isLoading: true,
     isAnimating: false,
     gatewayPosition: new Vector3(),
   }),
 
+  computed: {
+    selectedService () {
+      return this.services.find(service => service.port === this.activePort) || {}
+    }
+  },
+
   mounted () {
     this.init()
+
+    this.pointer.subscribe('pointer-down', this.onPointerDown)
+    this.pointer.subscribe('pointer-move', this.onPointerMove)
+    this.pointer.subscribe('pointer-up', this.onPointerUp)
   },
 
   unmounted () {
     this.renderer.offBeforeRender(this.onUpdate)
+
+    this.pointer.unsubscribe('pointer-down', this.onPointerDown)
+    this.pointer.unsubscribe('pointer-move', this.onPointerMove)
+    this.pointer.unsubscribe('pointer-up', this.onPointerUp)
   },
 
   methods: {
     async init () {
-      const { user } = this.$refs
-
+      // const { user } = this.$refs
+      // this.connectUserAgent(user.transform)
       await this.fetchServices()
 
-      this.connectUserAgent(user.transform)
+      this.camera.fov = this.isMobile ? 80 : 60
+      this.camera.updateProjectionMatrix()
 
       anime({
         targets: this.camera.position,
-        z: 10,
         y: 3,
         duration: 1000,
-        easing: 'easeOutQuad'
+        easing: 'easeOutQuad',
+        complete: () => {
+          if (this.services.length) {
+            const [ first ] = this.services
+
+            this.selectPort(first.port)
+          }
+        }
       })
 
       this.renderer.onBeforeRender(this.onUpdate)
@@ -97,25 +133,65 @@ export default defineComponent({
       this.isLoading = false
     },
 
+    onPrevious () {
+      const index = this.services.indexOf(this.selectedService)
+
+      if (index < 0) return
+      if (this.isAnimating) return
+
+      this.selectPort(null)
+      this.isAnimating = true
+
+      let d = -Math.TAU / this.services.length
+      d -= Math.mod(this.displacement, d)
+
+      anime({
+        targets: this,
+        displacement: this.displacement + d,
+        duration: 1000,
+        easing: 'easeInOutQuad',
+        complete: () => {
+          const prevIndex = Math.mod(index - 1, this.services.length)
+          const service = this.services[prevIndex]
+          this.selectPort(service.port)
+
+          this.isAnimating = false
+        }
+      })
+    },
+
+    onNext () {
+      const index = this.services.indexOf(this.selectedService)
+
+      if (index < 0) return
+      if (this.isAnimating) return
+
+      this.selectPort(null)
+      this.isAnimating = true
+
+      let d = Math.TAU / this.services.length
+      d -= Math.mod(this.displacement, d)
+
+      anime({
+        targets: this,
+        displacement: this.displacement + d,
+        duration: 1000,
+        easing: 'easeInOutQuad',
+        complete: () => {
+          const nextIndex = Math.mod(index + 1, this.services.length)
+          const service = this.services[nextIndex]
+          this.selectPort(service.port)
+
+          this.isAnimating = false
+        }
+      })
+    },
+
     onAccessService (service) {
       console.log('accessed servervice on port', service.port)
 
       if (service.port === 7000)
         this.$router.push({ name: 'Playground' })
-    },
-
-    onToggleService () {
-      /*
-      anime.remove(this.camera)
-
-      anime({
-        targets: this.camera,
-        fov: service ? 75 : 60,
-        duration: service ? 1000 : 2000,
-        easing: 'easeOutQuad',
-        update: () => this.camera.updateProjectionMatrix()
-      })
-      */
     },
 
     onSelectService (service) {
@@ -139,14 +215,32 @@ export default defineComponent({
       this.setPrimaryAxis(direction)
     },
 
+    onPointerDown () {
+      this.touchDelta = 0
+    },
+
+    onPointerMove ({ message }) {
+      if (!this.isMobile) return
+
+      this.touchDelta -= message.movementX * this.deltaTime
+
+      if (Math.abs(this.touchDelta) > .5) {
+        this.displacement -= message.movementX * this.deltaTime * .01
+      }
+    },
+
+    onPointerUp () {
+      if (Math.abs(this.touchDelta) <= .5) return
+
+      if (this.touchDelta < 0) this.onPrevious()
+      if (this.touchDelta > 0) this.onNext()
+    },
+
     onUpdate () {
-      const { user } = this.$refs
+      // const { user } = this.$refs
+      // this.displacement += this.axis.x * (this.deltaTime / 3)
 
-      this.displacement += this.axis.x * (this.deltaTime / 3)
-
-      const t = this.displacement
-
-      user.transform.position.x = Math.sin(t) * (this.radius - .5)
+      /*user.transform.position.x = Math.sin(t) * (this.radius - .5)
       user.transform.position.z = Math.cos(t) * (this.radius - .5)
 
       if (this.axis.x !== 0 || this.axis.y !== 0) {
@@ -155,12 +249,15 @@ export default defineComponent({
 
         user.transform.lookAt(targetPosition)
       }
+      */
+      const t = this.displacement
 
       this.camera.position.x = Math.sin(t) * (this.radius + 5.)
       this.camera.position.z = Math.cos(t) * (this.radius + 5.)
       this.camera.lookAt(this.gatewayPosition)
     },
 
+    /*
     getOrientedAxis (direction) {
       if (!this.camera) return direction
 
@@ -177,6 +274,58 @@ export default defineComponent({
       return right.multiplyScalar(direction.x)
         .add(forward.multiplyScalar(direction.y))
     }
+    */
   }
 })
 </script>
+
+<style lang="scss">
+.server-network {
+  &__active-service {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    font-size: 32px;
+    letter-spacing: 3px;
+    font-family: Helvetica, Arial;
+    color: white;
+    text-align: center;
+    text-transform: lowercase;
+    font-weight: 600;
+    background: linear-gradient(to top, rgba(black, .7) 0%, rgba(black, 0) 100%);
+    padding: 120px 0 40px 0;
+    pointer-events: none;
+  }
+
+  &__arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 80px;
+    height: 80px;
+    background: rgba(black, .5);
+    color: white;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    cursor: pointer;
+    opacity: 0;
+
+    &--left { left: 20px; }
+    &--right { right: 20px; }
+  }
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>

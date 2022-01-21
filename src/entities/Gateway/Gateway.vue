@@ -42,26 +42,6 @@
       @toggle="onToggleService($event, service)"
     />
   </Group>
-
-  <transition name="fade">
-    <span v-if="activeService" class="gateway__active-service">
-      {{ activeService.name }}
-    </span>
-  </transition>
-
-  <button
-    class="gateway__arrow gateway__arrow--left"
-    @click="onPrevious"
-  >
-    Prev
-  </button>
-
-  <button
-    class="gateway__arrow gateway__arrow--right"
-    @click="onNext"
-  >
-    Next
-  </button>
 </template>
 
 <script>
@@ -168,73 +148,6 @@ export default defineComponent({
 
       this.$emit('toggle-service', this.activeService)
     },
-
-    onPrevious () {
-      const currentIndex = this.services.indexOf(this.previousService)
-      const prevIndex = Math.mod(currentIndex - 1, this.services.length)
-      const service = this.services[prevIndex]
-
-      this.$emit('previous', service)
-    },
-
-    onNext () {
-      const currentIndex = this.services.indexOf(this.previousService)
-      const nextIndex = Math.mod(currentIndex + 1, this.services.length)
-      const service = this.services[nextIndex]
-
-      this.$emit('next', service)
-    }
   }
 })
 </script>
-
-<style lang="scss">
-.gateway {
-  &__active-service {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    font-size: 32px;
-    letter-spacing: 3px;
-    font-family: Helvetica, Arial;
-    color: white;
-    text-align: center;
-    text-transform: lowercase;
-    font-weight: 600;
-    background: linear-gradient(to top, rgba(black, .7) 0%, rgba(black, 0) 100%);
-    padding: 120px 0 40px 0;
-    pointer-events: none;
-  }
-
-  &__arrow {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 80px;
-    height: 80px;
-    background: rgba(black, .5);
-    color: white;
-    font-size: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 0;
-    cursor: pointer;
-    opacity: 0;
-
-    &--left { left: 20px; }
-    &--right { right: 20px; }
-  }
-}
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.2s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-</style>
