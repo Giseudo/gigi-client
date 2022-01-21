@@ -51,8 +51,8 @@ import { BlockMaterial } from '@/materials'
 import { useGame } from '@/store'
 import Service from './Service'
 
-import fragmentShader from './PathFrag.glsl'
-import vertexShader from './PathVert.glsl'
+import fragmentShader from './PathFrag.glsl?raw'
+import vertexShader from './PathVert.glsl?raw'
 
 export default defineComponent({
   name: 'Gateway',

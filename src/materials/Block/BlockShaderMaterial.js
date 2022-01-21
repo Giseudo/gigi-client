@@ -1,7 +1,7 @@
 import { Color, ShaderMaterial } from 'three'
 import { useGame } from '@/store'
-import fragmentShader from './BlockFrag.glsl'
-import vertexShader from './BlockVert.glsl'
+import fragmentShader from './BlockFrag.glsl?raw'
+import vertexShader from './BlockVert.glsl?raw'
 
 export default class BlockShaderMaterial extends ShaderMaterial {
   constructor (params) {

@@ -12,8 +12,8 @@
 import { defineComponent } from 'vue'
 import { Color } from 'three'
 import { useGame } from '@/store'
-import fragmentShader from './ProjectionFrag.glsl'
-import vertexShader from './ProjectionVert.glsl'
+import fragmentShader from './ProjectionFrag.glsl?raw'
+import vertexShader from './ProjectionVert.glsl?raw'
 
 export default defineComponent({
   name: 'ProjectionMaterial',

@@ -29,7 +29,7 @@ export default defineComponent({
   },
 
   data: () => ({
-    model: process.env.VUE_APP_PUBLIC_URL + '/meshes/player.fbx'
+    model: import.meta.env.VITE_PUBLIC_URL + '/meshes/player.fbx'
   }),
 
   methods: {

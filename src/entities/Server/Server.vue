@@ -59,8 +59,8 @@ import { defineComponent, defineAsyncComponent } from 'vue'
 import { initServer } from './'
 import { usePointer, useGame, useWindow } from '@/store'
 import { Vector3, Color } from 'three'
-import fragmentShader from './ServerFrag.glsl'
-import vertexShader from './ServerVert.glsl'
+import fragmentShader from './ServerFrag.glsl?raw'
+import vertexShader from './ServerVert.glsl?raw'
 import anime from 'animejs'
 
 export default defineComponent({

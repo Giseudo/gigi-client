@@ -1,7 +1,7 @@
 <template>
   <Group ref="transform" :position="position">
     <Group ref="text" :position="{ y: .5 }">
-      <Text
+      <Text v-if="font"
         :text="`:${port}`"
         :size=".3"
         :height="0"
@@ -139,23 +139,20 @@ export default defineComponent({
   },
 
   data: () => ({
+    font: null,
     isActive: false,
     isLoading: true,
     direction: { x: 0, y: 0, z: 0 },
-    font: require('@/assets/fonts/V5XtenderRegular.font').default
   }),
 
-  unmounted () {
-    // this.unsubscribe('user-move', this.onUserMove)
+  async mounted () {
+    this.font = (await import('@/assets/fonts/V5XtenderRegular.font?url')).default
   },
 
   methods: {
     init () {
       const forward = new Vector3(0, 0, -1)
-
       this.direction = this.transform.group.getWorldDirection(forward)
-
-      // this.subscribe('user-move', this.onUserMove)
     },
 
     onLoadText (mesh) {
