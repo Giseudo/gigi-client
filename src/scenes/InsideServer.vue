@@ -13,23 +13,21 @@
 
     <transition name="fade">
       <span v-if="activePort" class="server-network__active-service">
-        {{ selectedService.name }}
+        <b>{{ selectedService.name }}</b><br />
+        Port: <b>{{ selectedService.port }}</b><br />
+        Status: <b>Unrecheable</b>
       </span>
     </transition>
 
     <button
       class="server-network__arrow server-network__arrow--left"
       @click="onPrevious"
-    >
-      Prev
-    </button>
+    />
 
     <button
       class="server-network__arrow server-network__arrow--right"
       @click="onNext"
-    >
-      Next
-    </button>
+    />
   </div>
 </template>
 
@@ -80,6 +78,7 @@ export default defineComponent({
     touchDelta: 0,
     isLoading: true,
     isAnimating: false,
+    isDragging: false,
     gatewayPosition: new Vector3(),
   }),
 
@@ -107,8 +106,6 @@ export default defineComponent({
 
   methods: {
     async init () {
-      // const { user } = this.$refs
-      // this.connectUserAgent(user.transform)
       await this.fetchServices()
 
       this.camera.fov = this.isMobile ? 80 : 60
@@ -225,12 +222,15 @@ export default defineComponent({
       this.touchDelta -= message.movementX * this.deltaTime
 
       if (Math.abs(this.touchDelta) > .5) {
+        this.isDragging = true
         this.displacement -= message.movementX * this.deltaTime * .01
       }
     },
 
     onPointerUp () {
-      if (Math.abs(this.touchDelta) <= .5) return
+      if (!this.isDragging) return
+
+      this.isDragging = false
 
       if (this.touchDelta < 0) this.onPrevious()
       if (this.touchDelta > 0) this.onNext()
@@ -280,22 +280,34 @@ export default defineComponent({
 </script>
 
 <style lang="scss">
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400&display=swap');
+
 .server-network {
   &__active-service {
     position: absolute;
     left: 0;
     right: 0;
     bottom: 0;
-    font-size: 32px;
+    font-size: 11px;
     letter-spacing: 3px;
-    font-family: Helvetica, Arial;
+    line-height: 200%;
+    font-family: Roboto, Helvetica, Arial;
+    font-weight: 400;
     color: white;
-    text-align: center;
     text-transform: lowercase;
-    font-weight: 600;
     background: linear-gradient(to top, rgba(black, .7) 0%, rgba(black, 0) 100%);
-    padding: 120px 0 40px 0;
+    padding: 120px 40px 40px;
     pointer-events: none;
+    text-transform: uppercase;
+
+    &:before {
+      content: "";
+      position: absolute;
+      left: 20px;
+      bottom: 20px;
+      top: 100px;
+      border-left: 2px solid white;
+    }
   }
 
   &__arrow {
