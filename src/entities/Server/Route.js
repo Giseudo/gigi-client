@@ -1,8 +1,8 @@
 import { defineComponent } from 'vue'
 import { Vector3, ShaderMaterial, BufferGeometry, Float32BufferAttribute, Line, EllipseCurve } from 'three'
 import { useServer } from './'
-import fragmentShader from './RouteFrag.glsl'
-import vertexShader from './RouteVert.glsl'
+import fragmentShader from './RouteFrag.glsl?raw'
+import vertexShader from './RouteVert.glsl?raw'
 import anime from 'animejs'
 
 export default defineComponent({

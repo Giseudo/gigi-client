@@ -6,8 +6,8 @@
 import { defineComponent } from 'vue'
 import { Color } from 'three'
 import { useGame } from '@/store'
-import fragmentShader from './SpinnerFrag.glsl'
-import vertexShader from './SpinnerVert.glsl'
+import fragmentShader from './SpinnerFrag.glsl?raw'
+import vertexShader from './SpinnerVert.glsl?raw'
 
 export default defineComponent({
   name: 'SpinnerMaterial',

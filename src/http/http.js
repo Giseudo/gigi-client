@@ -1,7 +1,7 @@
 import { useAuthService } from '@/services/auth'
 
 export default {
-  baseUrl: `${process.env.VUE_APP_SERVER_URL}/api`,
+  baseUrl: `${import.meta.env.VITE_SERVER_URL}/api`,
 
   headers: {
     'Content-Type': 'application/json'

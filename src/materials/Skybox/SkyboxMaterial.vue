@@ -4,8 +4,8 @@
 
 <script>
 import { defineComponent } from 'vue'
-import fragmentShader from './SkyboxFrag.glsl'
-import vertexShader from './SkyboxVert.glsl'
+import fragmentShader from './SkyboxFrag.glsl?raw'
+import vertexShader from './SkyboxVert.glsl?raw'
 
 export default defineComponent({
   data: () => ({

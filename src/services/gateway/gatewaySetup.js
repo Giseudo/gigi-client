@@ -12,7 +12,7 @@ const getServices = computed(() => services.value)
 // mutations
 const setServices = value => services.value = value.map(service => ({
   ...service,
-  thumbnail: process.env.VUE_APP_PUBLIC_URL + '/textures/services/' + service.thumbnail
+  thumbnail: import.meta.env.VITE_PUBLIC_URL + '/textures/services/' + service.thumbnail
 }))
 
 const selectPort = value => {
