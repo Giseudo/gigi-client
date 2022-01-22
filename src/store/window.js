@@ -6,17 +6,17 @@ const queries = {
   tablet: window.matchMedia('screen and (max-width: 1279px)'),
 }
 
-const isXsMobile = ref(false)
-const isMobile = ref(false)
-const isTablet = ref(false)
-
-const setBreakpoint = () => {
-  isMobile.value = queries.mobile && queries.mobile.matches
-  isXsMobile.value = queries.xsMobile && queries.xsMobile.matches
-  isTablet.value = queries.tablet && queries.tablet.matches
-}
-
 export const initWindow = () => {
+  const isXsMobile = ref(false)
+  const isMobile = ref(false)
+  const isTablet = ref(false)
+
+  const setBreakpoint = () => {
+    isMobile.value = queries.mobile && queries.mobile.matches
+    isXsMobile.value = queries.xsMobile && queries.xsMobile.matches
+    isTablet.value = queries.tablet && queries.tablet.matches
+  }
+
   queries.tablet.addEventListener('change', setBreakpoint)
   queries.mobile.addEventListener('change', setBreakpoint)
   queries.xsMobile.addEventListener('change', setBreakpoint)
@@ -26,6 +26,10 @@ export const initWindow = () => {
   provide('window/isTablet', isTablet)
 
   setBreakpoint()
+
+  return {
+    isMobile: isMobile.value
+  }
 }
 
 export const destroyWindow = () => {

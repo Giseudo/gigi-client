@@ -39,7 +39,6 @@
       :position="getServicePosition(index)"
       :thumbnail="service.thumbnail"
       @click="$emit('access-service', service)"
-      @toggle="onToggleService($event, service)"
     />
   </Group>
 </template>
@@ -57,7 +56,7 @@ import vertexShader from './PathVert.glsl?raw'
 export default defineComponent({
   name: 'Gateway',
 
-  emits: [ 'access-service', 'toggle-service', 'previous', 'next' ],
+  emits: [ 'access-service' ],
 
   components: {
     Service,
@@ -75,7 +74,6 @@ export default defineComponent({
       blending: 2,
       uniforms: { uTime: time }
     }
-
 
     return {
       transform,
@@ -102,11 +100,6 @@ export default defineComponent({
       default: () => ({ x: 0, y: 0, z: 0 })
     }
   },
-
-  data: () => ({
-    activeService: null,
-    previousService: null
-  }),
 
   mounted () {
     const { services, core, path } = this.$refs
@@ -140,13 +133,6 @@ export default defineComponent({
       const z = Math.cos((Math.TAU / count) * index) * (this.radius - 1.75)
 
       return { x, y, z}
-    },
-
-    onToggleService ({ active }, service) {
-      this.previousService = service
-      this.activeService = active ? service : null
-
-      this.$emit('toggle-service', this.activeService)
     },
   }
 })

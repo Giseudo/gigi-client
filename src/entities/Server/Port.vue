@@ -1,7 +1,6 @@
 <template>
   <Group ref="transform" :position="position" :scale="{ x: .5, y: .5, z: .5 }">
     <Text ref="text"
-      v-if="font"
       :text="`:${number}`"
       :size=".75"
       :height="0"
@@ -59,6 +58,7 @@
 import { defineComponent } from 'vue'
 import { Vector3 } from 'three'
 import { useServer } from './'
+import font from '@/assets/fonts/V5XtenderRegular.font?url'
 import anime from 'animejs'
 
 export default defineComponent({
@@ -140,15 +140,11 @@ export default defineComponent({
   },
 
   data: () => ({
-    font: null,
+    font,
     height: 0,
     circleOpacity: .2,
     test: false
   }),
-
-  async mounted () {
-    this.font = (await import('@/assets/fonts/V5XtenderRegular.font?url')).default
-  },
 
   methods: {
     onLoadText (mesh) {

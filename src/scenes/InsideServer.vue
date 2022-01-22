@@ -5,19 +5,20 @@
       :radius="radius"
       :services="services"
       :position="gatewayPosition"
+      @access-service="onAccessService"
     />
 
     <Sphere :scale="{ x: 50, y: 50, z: 50 }">
       <SkyboxMaterial />
     </Sphere>
 
-    <transition name="fade">
+    <!--transition name="fade">
       <span v-if="activePort" class="server-network__active-service">
         <b>{{ selectedService.name }}</b><br />
         Port: <b>{{ selectedService.port }}</b><br />
-        Status: <b>Unrecheable</b>
+        Status: <b>Unreachable</b>
       </span>
-    </transition>
+    </transition-->
 
     <button
       class="server-network__arrow server-network__arrow--left"
@@ -28,6 +29,8 @@
       class="server-network__arrow server-network__arrow--right"
       @click="onNext"
     />
+
+    <Pod ref="pod" />
   </div>
 </template>
 
@@ -37,6 +40,7 @@ import { Vector3 } from 'three'
 import { useGame, useInput, useNavigator, usePointer, useWindow } from '@/store'
 import { useGatewayService } from '@/services'
 import { Gateway } from '@/entities/Gateway'
+import { Pod } from '@/entities/Pod'
 import { SkyboxMaterial } from '@/materials'
 import anime from 'animejs'
 
@@ -46,10 +50,11 @@ export default defineComponent({
   components: {
     Gateway,
     SkyboxMaterial,
+    Pod,
   },
   
   setup () {
-    const { camera, renderer, deltaTime } = useGame()
+    const { camera, renderer, time, deltaTime } = useGame()
     const { axis, setPrimaryAxis } = useInput()
     const { connectUserAgent } = useNavigator()
     const { fetchServices, selectPort, services, activePort } = useGatewayService()
@@ -58,6 +63,7 @@ export default defineComponent({
 
     return {
       pointer,
+      time,
       deltaTime,
       renderer,
       camera,
@@ -107,9 +113,11 @@ export default defineComponent({
   methods: {
     async init () {
       await this.fetchServices()
+      const { pod } = this.$refs
 
-      this.camera.fov = this.isMobile ? 80 : 60
-      this.camera.updateProjectionMatrix()
+      this.camera.attach(this.$refs.pod.transform)
+
+      pod.transform.position.z = -.75
 
       anime({
         targets: this.camera.position,
@@ -124,6 +132,7 @@ export default defineComponent({
           }
         }
       })
+
 
       this.renderer.onBeforeRender(this.onUpdate)
 
@@ -237,27 +246,22 @@ export default defineComponent({
     },
 
     onUpdate () {
-      // const { user } = this.$refs
-      // this.displacement += this.axis.x * (this.deltaTime / 3)
-
-      /*user.transform.position.x = Math.sin(t) * (this.radius - .5)
-      user.transform.position.z = Math.cos(t) * (this.radius - .5)
-
-      if (this.axis.x !== 0 || this.axis.y !== 0) {
-        const targetPosition = this.getOrientedAxis(this.axis)
-          .add(user.transform.position)
-
-        user.transform.lookAt(targetPosition)
-      }
-      */
+      const { pod } = this.$refs
       const t = this.displacement
 
       this.camera.position.x = Math.sin(t) * (this.radius + 5.)
       this.camera.position.z = Math.cos(t) * (this.radius + 5.)
       this.camera.lookAt(this.gatewayPosition)
+
+      const podTarget = this.camera.position.clone()
+      podTarget.y += ((Math.cos(this.time * 100. * this.deltaTime) + 1) / 2) * .25
+
+      pod.transform.lookAt(podTarget)
+      pod.transform.position.y = -.4 + Math.sin(this.time * 100. * this.deltaTime) * .025
     },
 
     /*
+    // TODO Where this belongs?
     getOrientedAxis (direction) {
       if (!this.camera) return direction
 

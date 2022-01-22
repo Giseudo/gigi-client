@@ -8,7 +8,6 @@ export default class BlockShaderMaterial extends ShaderMaterial {
     const { time } = useGame()
 
     super({
-      ...params || {},
       fragmentShader,
       vertexShader,
       uniforms: {

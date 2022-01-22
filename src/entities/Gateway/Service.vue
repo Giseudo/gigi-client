@@ -1,7 +1,7 @@
 <template>
   <Group ref="transform" :position="position">
     <Group ref="text" :position="{ y: .5 }">
-      <Text v-if="font"
+      <Text
         :text="`:${port}`"
         :size=".3"
         :height="0"
@@ -43,6 +43,7 @@ import { Vector3 } from 'three'
 import { BlockMaterial, ProjectionMaterial } from '@/materials'
 import { useGatewayService } from '@/services'
 import { Spinner } from '@/entities/Spinner'
+import font from '@/assets/fonts/V5XtenderRegular.font?url'
 import anime from 'animejs'
 
 export default defineComponent({
@@ -57,16 +58,10 @@ export default defineComponent({
   },
   
   setup () {
-    // const { userAgent, subscribe, unsubscribe } = useNavigator()
-    // const { renderer } = useGame()
     const { activePort } = useGatewayService()
     const transform = ref(null)
 
     return {
-      // subscribe,
-      // unsubscribe,
-      // renderer
-      // userAgent,
       transform,
       activePort,
     }
@@ -139,19 +134,15 @@ export default defineComponent({
   },
 
   data: () => ({
-    font: null,
-    isActive: false,
+    font,
     isLoading: true,
     direction: { x: 0, y: 0, z: 0 },
   }),
 
-  async mounted () {
-    this.font = (await import('@/assets/fonts/V5XtenderRegular.font?url')).default
-  },
-
   methods: {
     init () {
       const forward = new Vector3(0, 0, -1)
+
       this.direction = this.transform.group.getWorldDirection(forward)
     },
 
@@ -167,19 +158,8 @@ export default defineComponent({
       this.init()
     },
 
-    /*
-    onUserMove ({ message: userPosition }) {
-      const userDirection = userPosition.clone()
-        .sub(this.transform.group.position)
-        .normalize()
-      const inFrontOf = userDirection.dot(this.direction) > .5
-
-      this.isActive = inFrontOf
-    },
-    */
-
     onClick () {
-      if (!this.isActive) return
+      if (this.activePort !== this.port) return
 
       this.$emit('click')
     }

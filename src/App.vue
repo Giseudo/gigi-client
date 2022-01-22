@@ -1,6 +1,6 @@
 <template>
   <Renderer ref="renderer" resize="window" >
-    <Camera :fov="60" />
+    <Camera :fov="80" />
     <Scene>
       <RouterView v-if="!isLoading" />
     </Scene>
@@ -20,7 +20,6 @@ export default defineComponent({
   setup () {
     const { renderer } = initGame()
     const { login } = useAuthService()
-
     initWindow()
     initNavigator()
     initPointer()
@@ -45,6 +44,9 @@ export default defineComponent({
       await this.login('7d762570-760d-11ec-a915-ef8a0b584cc1')
 
       this.isLoading = false
+
+      // Otherwise camera children wont show on the scene
+      this.renderer.scene.add(this.renderer.camera)
     }
   }
 })
