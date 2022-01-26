@@ -43,9 +43,7 @@ export default defineComponent({
   mounted () {
     const { boxes } = this.$refs
     const r = 360 / this.boxCount
-
-    this.camera.position.set(0, 0, 0)
-    this.camera.lookAt(new Vector3())
+    const center = new Vector3()
 
     anime({
       targets: this.camera.position,
@@ -53,7 +51,8 @@ export default defineComponent({
       y: 0,
       x: 0,
       duration: 1000,
-      easing: 'easeOutQuad'
+      easing: 'easeOutQuad',
+      update: () => this.camera.lookAt(center)
     })
 
     boxes.forEach(({ mesh }, i) => {

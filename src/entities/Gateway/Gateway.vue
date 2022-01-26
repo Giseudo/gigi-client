@@ -22,7 +22,7 @@
       <BlockMaterial color="#505050" />
     </Cylinder>
 
-    <Ring ref="path"
+    <!--Ring ref="path"
       :outer-radius="radius"
       :inner-radius="radius - 1"
       :theta-segments="64"
@@ -30,7 +30,7 @@
       :rotation="{ x: -Math.PI / 2, y: 0, z: 0 }"
     >
       <ShaderMaterial :props="pathMaterialProps" />
-    </Ring>
+    </Ring-->
 
     <Service ref="services"
       v-for="(service, index) in services"
@@ -114,6 +114,7 @@ export default defineComponent({
       service.rotateOnAxis(up, Math.PI)
     }
 
+    /*
     // FIXME move to another component
     const geo = new RingBufferGeometry(3, 5, 64)
     const pos = geo.attributes.position
@@ -123,6 +124,7 @@ export default defineComponent({
       v3.fromBufferAttribute(pos, i)
       path.mesh.geometry.attributes.uv.setXY(i, v3.length() < 4 ? 0 : 1, 1)
     }
+    */
   },
 
   methods: {

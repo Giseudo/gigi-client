@@ -1,7 +1,7 @@
 <template>
   <div class="server-network">
     <Gateway ref="gateway"
-      v-if="!isLoading"
+      v-if="showGateway"
       :radius="radius"
       :services="services"
       :position="gatewayPosition"
@@ -30,7 +30,7 @@
       @click="onNext"
     />
 
-    <Pod ref="pod" />
+    <Pod ref="pod" @click="onPodInteract" />
   </div>
 </template>
 
@@ -38,7 +38,7 @@
 import { defineComponent } from 'vue'
 import { Vector3 } from 'three'
 import { useGame, useInput, useNavigator, usePointer, useWindow } from '@/store'
-import { useGatewayService } from '@/services'
+import { useGatewayService, useDialogueService } from '@/services'
 import { Gateway } from '@/entities/Gateway'
 import { Pod } from '@/entities/Pod'
 import { SkyboxMaterial } from '@/materials'
@@ -58,6 +58,7 @@ export default defineComponent({
     const { axis, setPrimaryAxis } = useInput()
     const { connectUserAgent } = useNavigator()
     const { fetchServices, selectPort, services, activePort } = useGatewayService()
+    const { showDialogue, interact, interactedWithPod } = useDialogueService()
     const { isMobile } = useWindow()
     const { pointer } = usePointer()
 
@@ -75,10 +76,14 @@ export default defineComponent({
       selectPort,
       fetchServices,
       activePort,
+      showDialogue,
+      interact,
+      interactedWithPod
     }
   },
 
   data: () => ({
+    podHeight: -.45,
     radius: 12,
     displacement: 0,
     touchDelta: 0,
@@ -91,33 +96,16 @@ export default defineComponent({
   computed: {
     selectedService () {
       return this.services.find(service => service.port === this.activePort) || {}
+    },
+
+    showGateway () {
+      return !this.isLoading || this.interactedWithPod
     }
   },
 
-  mounted () {
-    this.init()
-
-    this.pointer.subscribe('pointer-down', this.onPointerDown)
-    this.pointer.subscribe('pointer-move', this.onPointerMove)
-    this.pointer.subscribe('pointer-up', this.onPointerUp)
-  },
-
-  unmounted () {
-    this.renderer.offBeforeRender(this.onUpdate)
-
-    this.pointer.unsubscribe('pointer-down', this.onPointerDown)
-    this.pointer.unsubscribe('pointer-move', this.onPointerMove)
-    this.pointer.unsubscribe('pointer-up', this.onPointerUp)
-  },
-
-  methods: {
-    async init () {
-      await this.fetchServices()
-      const { pod } = this.$refs
-
-      this.camera.attach(this.$refs.pod.transform)
-
-      pod.transform.position.z = -.75
+  watch: {
+    showGateway (value) {
+      if (!value) return
 
       anime({
         targets: this.camera.position,
@@ -132,11 +120,54 @@ export default defineComponent({
           }
         }
       })
+    },
 
+    showDialogue (value) {
+      anime({
+        targets: this,
+        podHeight: value ? .25 : -.45,
+        duration: 1000,
+        easing: 'easeOutQuad'
+      })
+
+      if (!value)
+        this.isLoading = false
+    }
+  },
+
+  mounted () {
+    this.init()
+
+    this.pointer.subscribe('pointer-down', this.onPointerDown)
+    this.pointer.subscribe('pointer-move', this.onPointerMove)
+    this.pointer.subscribe('pointer-up', this.onPointerUp)
+  },
+
+  beforeUnmount () {
+    // FIXME we need to remove manua camera children :(
+    const { pod } = this.$refs
+    this.camera.remove(pod.transform)
+
+    this.renderer.offBeforeRender(this.onUpdate)
+
+    this.pointer.unsubscribe('pointer-down', this.onPointerDown)
+    this.pointer.unsubscribe('pointer-move', this.onPointerMove)
+    this.pointer.unsubscribe('pointer-up', this.onPointerUp)
+  },
+
+  methods: {
+    async init () {
+      await this.fetchServices()
+      const { pod } = this.$refs
+
+      this.camera.attach(this.$refs.pod.transform)
+      pod.transform.position.z = -.75
 
       this.renderer.onBeforeRender(this.onUpdate)
+    },
 
-      this.isLoading = false
+    onPodInteract () {
+      this.interact()
     },
 
     onPrevious () {
@@ -194,10 +225,9 @@ export default defineComponent({
     },
 
     onAccessService (service) {
-      console.log('accessed servervice on port', service.port)
+      console.log('accessed service on port', service.port)
 
-      if (service.port === 7000)
-        this.$router.push({ name: 'Playground' })
+      this.$router.push({ name: 'Playground' })
     },
 
     onSelectService (service) {
@@ -253,11 +283,13 @@ export default defineComponent({
       this.camera.position.z = Math.cos(t) * (this.radius + 5.)
       this.camera.lookAt(this.gatewayPosition)
 
-      const podTarget = this.camera.position.clone()
-      podTarget.y += ((Math.cos(this.time * 100. * this.deltaTime) + 1) / 2) * .25
+      if (pod) {
+        const podLookPosition = this.camera.position.clone()
+        podLookPosition.y += ((Math.cos(this.time * 100. * this.deltaTime) + 1) / 2) * .25
 
-      pod.transform.lookAt(podTarget)
-      pod.transform.position.y = -.4 + Math.sin(this.time * 100. * this.deltaTime) * .025
+        pod.transform.lookAt(podLookPosition)
+        pod.transform.position.y = this.podHeight + Math.sin(this.time * 100. * this.deltaTime) * .025
+      }
     },
 
     /*

@@ -9,30 +9,60 @@
       <FXAAPass />
     </EffectComposer>
   </Renderer>
+
+  <GDialogue
+    v-if="showDialogue"
+    :text="message.text"
+    :choices="message.choices"
+    :speaker="message.speaker"
+    @continue="continueDialogue"
+  />
 </template>
 
 <script>
-import { defineComponent } from 'vue'
-import { initGame, initPointer, initWindow, initNavigator, initInput } from './store'
-import { useAuthService } from './services/auth'
+import { defineComponent, onBeforeUnmount } from 'vue'
+import { GDialogue } from '@/components'
+import { initGame, initPointer, initWindow, initNavigator, initInput } from '@/store'
+import { useAuthService } from '@/services/auth'
+import { initDialogueService, useDialogueService, destroyDialogueService } from '@/services/dialogue'
 
 export default defineComponent({
+  name: 'App',
+
+  components: {
+    GDialogue
+  },
+
   setup () {
     const { renderer } = initGame()
     const { login } = useAuthService()
+    const { message, showDialogue, continueDialogue } = useDialogueService()
+
     initWindow()
     initNavigator()
     initPointer()
     initInput()
+    initDialogueService()
+
+    onBeforeUnmount(() => {
+      destroyDialogueService()
+    })
 
     return {
       renderer,
       login,
+      message,
+      showDialogue,
+      continueDialogue
     }
   },
 
   data: () => ({
-    isLoading: true
+    isLoading: true,
+    options: [
+      'Dolor aliquam consectetur autem nesciunt amet',
+      'Hello..?',
+    ]
   }),
 
   mounted () {
@@ -47,7 +77,7 @@ export default defineComponent({
 
       // Otherwise camera children wont show on the scene
       this.renderer.scene.add(this.renderer.camera)
-    }
+    },
   }
 })
 </script>
@@ -66,6 +96,14 @@ body {
     top: 0;
     left: 0;
     touch-action: none;
+  }
+
+  & > .g-dialogue {
+    position: absolute;
+    bottom: 40px;
+    left: 20px;
+    right: 20px;
+    z-index: 10;
   }
 }
 </style>

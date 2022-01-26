@@ -4,6 +4,13 @@
       :src="podModel"
       @load="onLoadModel"
     />
+    <Sphere
+      ref="sphere"
+      :scale="{ x: .1, y: .1, z: .1 }"
+      @click="$emit('click')"
+    >
+      <BasicMaterial :props="{ transparent: true, depthWrite: false, opacity: 0 }" />
+    </Sphere>
   </Group>
 </template>
 

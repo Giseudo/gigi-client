@@ -11,6 +11,7 @@
       >
         <BasicMaterial
           color="#ffff00"
+          :props="{ blending: 2, transparent: true }"
         />
       </Text>
     </Group>
