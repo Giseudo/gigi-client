@@ -147,6 +147,7 @@ export default defineComponent({
     // FIXME we need to remove manua camera children :(
     const { pod } = this.$refs
     this.camera.remove(pod.transform)
+    this.selectPort(null)
 
     this.renderer.offBeforeRender(this.onUpdate)
 
@@ -164,6 +165,21 @@ export default defineComponent({
       pod.transform.position.z = -.75
 
       this.renderer.onBeforeRender(this.onUpdate)
+
+      if (this.interactedWithPod) {
+        anime({
+          targets: this.camera.position,
+          y: 3,
+          duration: 1000,
+          easing: 'easeOutQuad',
+        })
+
+        if (!this.services.length) return
+
+        const [ first ] = this.services
+
+        this.selectPort(first.port)
+      }
     },
 
     onPodInteract () {
