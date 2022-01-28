@@ -83,6 +83,18 @@ export default defineComponent({
 </script>
 
 <style lang="scss">
+@mixin responsive($breakpoint) {
+  @if ($breakpoint == desktop) {
+    @media (min-width: 901px) { @content }
+  }
+  @if ($breakpoint == tablet) {
+    @media (max-width: 900px) { @content }
+  }
+  @if ($breakpoint == mobile) {
+    @media (max-width: 600px) { @content }
+  }
+}
+
 body {
   margin: 0;
   overflow: hidden;
@@ -100,10 +112,16 @@ body {
 
   & > .g-dialogue {
     position: absolute;
-    bottom: 40px;
-    left: 20px;
-    right: 20px;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
     z-index: 10;
+
+    @include responsive(desktop) {
+      bottom: 40px;
+      left: 20px;
+      right: 20px;
+    }
   }
 }
 </style>

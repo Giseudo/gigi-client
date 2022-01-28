@@ -29,7 +29,7 @@ export default defineComponent({
 
     anime({
       targets: this.camera.position,
-      z: this.isMobile ? 14 : 12,
+      z: this.isMobile ? 10 : 12,
       duration: 2000,
       easing: 'easeOutQuad'
     })

@@ -12,6 +12,8 @@
       <SkyboxMaterial />
     </Sphere>
 
+    <Pod ref="pod" @click="onPodInteract" />
+
     <!--transition name="fade">
       <span v-if="activePort" class="server-network__active-service">
         <b>{{ selectedService.name }}</b><br />
@@ -20,17 +22,19 @@
       </span>
     </transition-->
 
-    <button
+    <button v-if="!isMobile && showGateway"
       class="server-network__arrow server-network__arrow--left"
       @click="onPrevious"
-    />
+    >
+      Prev
+    </button>
 
-    <button
+    <button v-if="!isMobile && showGateway"
       class="server-network__arrow server-network__arrow--right"
       @click="onNext"
-    />
-
-    <Pod ref="pod" @click="onPodInteract" />
+    >
+      Next
+    </button>
   </div>
 </template>
 
@@ -365,21 +369,20 @@ export default defineComponent({
   &__arrow {
     position: absolute;
     top: 50%;
-    transform: translateY(-50%);
-    width: 80px;
-    height: 80px;
+    transform: translateY(-50%) rotateZ(45deg);
+    width: 60px;
+    height: 60px;
     background: rgba(black, .5);
     color: white;
-    font-size: 24px;
+    font-size: 15px;
     display: flex;
     align-items: center;
     justify-content: center;
     border: 0;
     cursor: pointer;
-    opacity: 0;
 
-    &--left { left: 20px; }
-    &--right { right: 20px; }
+    &--left { left: 40px; }
+    &--right { right: 40px; }
   }
 }
 

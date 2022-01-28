@@ -1,7 +1,7 @@
 <template>
   <div class="g-dialogue" :class="classes">
     <div class="g-dialogue__container">
-      <div class="g-dialogue__choices" v-if="choices.length > 1">
+      <div class="g-dialogue__choices" v-if="showChoices">
         <span ref="cursor" class="g-dialogue-cursor" />
 
         <button
@@ -25,11 +25,10 @@
           {{ speaker }}:
         </span>
 
-        <span class="g-dialogue-text g-dialogue-text--body">
-          {{ text }}
-        </span>
-
-        <span class="g-dialogue__arrow" v-if="!choices.length" />
+        <span
+          v-typewrite="{ text, skip, complete: onTypewriteEnd }"
+          class="g-dialogue-text g-dialogue-text--body"
+        />
       </div>
     </div>
   </div>
@@ -38,14 +37,27 @@
 <script>
 import { defineComponent } from 'vue'
 import anime from 'animejs'
+import { Typewrite } from '../../directives/Typewrite'
+console.log(Typewrite)
 
 export default defineComponent({
   emits: [ 'continue' ],
 
+  directives: { Typewrite },
+
   computed: {
+    showUnderscore () {
+      return this.isTyping || !this.isTyping && this.choices.length <= 1
+    },
+
+    showChoices () {
+      return !this.isTyping && this.choices.length > 1
+    },
+
     classes () {
       return {
-        'g-dialogue--has-choices': this.choices.length > 0
+        'g-dialogue--show-underscore': this.showUnderscore,
+        'g-dialogue--show-choices': this.showChoices
       }
     }
   },
@@ -64,6 +76,11 @@ export default defineComponent({
     choices: {
       type: Array,
       default: () => ([])
+    },
+
+    speed: {
+      type: Number,
+      default: 50
     }
   },
 
@@ -88,11 +105,18 @@ export default defineComponent({
         duration: 150,
         easing: 'easeOutQuad'
       })
-    }
+    },
+
+    text () {
+      this.skip = false
+      this.isTyping = true
+    },
   },
 
   data: () => ({
-    active: 0
+    active: 0,
+    isTyping: true,
+    skip: false
   }),
 
   methods: {
@@ -105,14 +129,34 @@ export default defineComponent({
     },
 
     onMessageClick () {
+      if (this.isTyping) return this.skip = true
+      if (this.choices.length > 1) return
+
       this.$emit('continue', 0)
-    }
+    },
+
+    onTypewriteEnd () {
+      this.isTyping = false
+      this.skip = false
+    },
   }
 })
 </script>
 
 <style lang="scss">
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400&display=swap');
+
+@mixin responsive($breakpoint) {
+  @if ($breakpoint == desktop) {
+    @media (min-width: 901px) { @content }
+  }
+  @if ($breakpoint == tablet) {
+    @media (max-width: 900px) { @content }
+  }
+  @if ($breakpoint == mobile) {
+    @media (max-width: 600px) { @content }
+  }
+}
 
 @font-face{
     font-family: 'Source Code Variable';
@@ -167,8 +211,8 @@ export default defineComponent({
 
   &__choice {
     position: relative;
-    margin-bottom: 20px;
-    padding: 10px 20px;
+    margin-bottom: 10px;
+    padding: 10px 15px;
     background-color: rgba(black, .5);
     border: 0;
     text-align: left;
@@ -181,61 +225,58 @@ export default defineComponent({
       top: 22px;
       height: 10px;
       width: 0%;
-      background: rgba(white, .2);
+      background: rgba(white, .1);
       transition: .2s ease-out width;
     }
 
     &--selected {
       &:before { width: 75%; }
     }
+
+    @include responsive(desktop) {
+      margin-bottom: 20px;
+      padding: 10px 20px;
+    }
   }
 
   &__message {
     flex: 1 100%;
-    padding: 20px;
-    padding-bottom: 40px;
-    padding-left: 40px;
+    padding: 15px;
+    padding-bottom: 20px;
     position: relative;
     background-color: rgba(black, .5);
+    min-height: 100px;
     cursor: pointer;
 
-    &:after {
-      content: "_";
-      color: white;
-      font-family: 'Source Code Variable';
-      font-weight: 800;
-      font-size: 14px;
-      animation: underscore;
-      animation-duration: 1s;
-      animation-iteration-count: infinite;
-      animation-timing-function: steps(2, jump-none);
-    }
-
-    .g-dialogue-text {
-      &--subhead {
-        align-self: flex-start;
-        transform: translateX(-20px);
-      }
+    @include responsive(desktop) {
+      padding: 20px;
+      padding-bottom: 40px;
     }
   }
 
-  &__arrow {
-    position: absolute;
-    width: 0;
-    height: 0;
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
-    border-top: 5px solid white;
-    bottom: 20px;
-    right: 20px;
-    animation-name: arrow;
-    animation-duration: 1s;
-    animation-iteration-count: infinite;
-  }
-
-  &--has-choices {
+  &--show-choices {
     .g-dialogue {
       &__arrow { display: none; }
+    }
+  }
+
+  &--show-underscore {
+    .g-dialogue {
+      &__message {
+        .g-dialogue-text--body {
+          &:after {
+            content: "_";
+            color: white;
+            font-family: 'Source Code Variable';
+            font-weight: 800;
+            font-size: 14px;
+            animation: underscore;
+            animation-duration: 1s;
+            animation-iteration-count: infinite;
+            animation-timing-function: steps(2, jump-none);
+          }
+        }
+      }
     }
   }
 
@@ -267,26 +308,39 @@ export default defineComponent({
   font-family: 'Source Code Variable';
 
   &--body {
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 400;
     line-height: 24px;
     letter-spacing: 1px;
   }
 
   &--choice {
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 600;
-    line-height: 24px;
+    line-height: 18px;
     letter-spacing: 1px;
   }
 
   &--subhead {
     display: block;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 800;
     line-height: 24px;
     letter-spacing: 1px;
     margin-bottom: 10px;
+  }
+
+  @include responsive(desktop) {
+    &--body {
+      font-size: 14px;
+    }
+    &--choice {
+      font-size: 14px;
+    line-height: 24px;
+    }
+    &--subhead {
+      font-size: 16px;
+    }
   }
 }
 
