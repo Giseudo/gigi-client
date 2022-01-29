@@ -10,7 +10,7 @@
     </EffectComposer>
   </Renderer>
 
-  <GDialogue
+  <GDialogue ref="dialogue"
     v-if="showDialogue"
     :text="message.text"
     :choices="message.choices"
@@ -22,7 +22,7 @@
 <script>
 import { defineComponent, onBeforeUnmount } from 'vue'
 import { GDialogue } from '@/components'
-import { initGame, initPointer, initWindow, initNavigator, initInput } from '@/store'
+import { initGame, initPointer, initWindow, initNavigator, initInput, useInput } from '@/store'
 import { useAuthService } from '@/services/auth'
 import { initDialogueService, useDialogueService, destroyDialogueService } from '@/services/dialogue'
 
@@ -37,6 +37,7 @@ export default defineComponent({
     const { renderer } = initGame()
     const { login } = useAuthService()
     const { message, showDialogue, continueDialogue } = useDialogueService()
+    const { axis, subscribe } = useInput()
 
     initWindow()
     initNavigator()
@@ -49,20 +50,29 @@ export default defineComponent({
     })
 
     return {
+      axis,
       renderer,
       login,
+      subscribe,
       message,
       showDialogue,
       continueDialogue
     }
   },
 
+  watch: {
+    'axis.y' (value) {
+      const { dialogue } = this.$refs
+
+      if (!dialogue) return
+
+      if (value > 0) dialogue.selectPrevious()
+      if (value < 0) dialogue.selectNext()
+    }
+  },
+
   data: () => ({
-    isLoading: true,
-    options: [
-      'Dolor aliquam consectetur autem nesciunt amet',
-      'Hello..?',
-    ]
+    isLoading: true
   }),
 
   mounted () {
@@ -75,32 +85,31 @@ export default defineComponent({
 
       this.isLoading = false
 
-      // Otherwise camera children wont show on the scene
+      // Show camera's children on scene
       this.renderer.scene.add(this.renderer.camera)
+
+      this.subscribe('button:down', ({ button }) => {
+        const { dialogue } = this.$refs
+
+        if (button === 'confirm')
+          dialogue?.confirm()
+      })
     },
   }
 })
 </script>
 
 <style lang="scss">
-@mixin responsive($breakpoint) {
-  @if ($breakpoint == desktop) {
-    @media (min-width: 901px) { @content }
-  }
-  @if ($breakpoint == tablet) {
-    @media (max-width: 900px) { @content }
-  }
-  @if ($breakpoint == mobile) {
-    @media (max-width: 600px) { @content }
-  }
-}
-
 body {
   margin: 0;
-  overflow: hidden;
 }
 
 #app {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+
   & > canvas {
     position: absolute;
     width: 100%;

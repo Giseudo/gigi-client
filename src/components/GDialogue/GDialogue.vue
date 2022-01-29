@@ -1,32 +1,32 @@
 <template>
   <div class="g-dialogue" :class="classes">
     <div class="g-dialogue__container">
-      <div class="g-dialogue__choices" v-if="showChoices">
-        <span ref="cursor" class="g-dialogue-cursor" />
+      <transition name="choices" mode="out-in">
+        <div class="g-dialogue__choices" v-if="showChoices">
+          <span ref="cursor" class="g-dialogue-cursor" />
 
-        <button
-          ref="choices"
-          v-for="(choice, index) in choices"
-          class="g-dialogue__choice"
-          :class="{ 'g-dialogue__choice--selected': index === active }"
-          :key="index"
-          @click="onOptionClick(index)"
-          @mouseenter="onOptionSelect(index)"
-          @focus="onOptionSelect(index)"
-        >
-          <span class="g-dialogue-text g-dialogue-text--choice">
-            {{ choice }}
-          </span>
-        </button>
-      </div>
+          <button ref="choices"
+            v-for="(choice, index) in choices"
+            class="g-dialogue-choice"
+            :class="{ 'g-dialogue-choice--selected': index === activeChoice }"
+            :key="index"
+            @click="onOptionClick(index)"
+            @mouseenter="onOptionSelect(index)"
+            @focus="onOptionSelect(index)"
+          >
+            <span class="g-dialogue-text g-dialogue-text--choice">
+              {{ choice }}
+            </span>
+          </button>
+        </div>
+      </transition>
 
       <div class="g-dialogue__message" @click="onMessageClick">
         <span class="g-dialogue-text g-dialogue-text--subhead">
           {{ speaker }}:
         </span>
 
-        <span
-          v-typewrite="{ text, skip, complete: onTypewriteEnd }"
+        <span v-typewrite="{ text, skip, complete: onTypewriteEnd }"
           class="g-dialogue-text g-dialogue-text--body"
         />
       </div>
@@ -36,9 +36,8 @@
 
 <script>
 import { defineComponent } from 'vue'
-import anime from 'animejs'
 import { Typewrite } from '../../directives/Typewrite'
-console.log(Typewrite)
+import anime from 'animejs'
 
 export default defineComponent({
   emits: [ 'continue' ],
@@ -57,7 +56,8 @@ export default defineComponent({
     classes () {
       return {
         'g-dialogue--show-underscore': this.showUnderscore,
-        'g-dialogue--show-choices': this.showChoices
+        'g-dialogue--show-choices': this.showChoices,
+        'g-dialogue--perspective': this.perspective,
       }
     }
   },
@@ -81,20 +81,28 @@ export default defineComponent({
     speed: {
       type: Number,
       default: 50
-    }
+    },
+
+    perspective: {
+      type: Boolean,
+      default: false
+    },
   },
 
   watch: {
-    active (index) {
-      if (!this.choices.length) return
+    activeChoice (index) {
+      if (!this.showChoices) return
 
       const { cursor, choices } = this.$refs
       const choice = choices[index]
+
+      if (!choice) return
+
       const height = 44
       const rectA = choice.getBoundingClientRect()
       const rectB = choice.parentNode.getBoundingClientRect()
       const offset = (rectA.top - rectB.top) + (height / 2)
-      const selectedClass = 'g-dialogue__choice--selected'
+      const selectedClass = 'g-dialogue-choice--selected'
 
       choices.forEach(choice => choice.classList.remove(selectedClass))
       choice.classList.add(selectedClass)
@@ -114,18 +122,20 @@ export default defineComponent({
   },
 
   data: () => ({
-    active: 0,
+    activeChoice: 0,
     isTyping: true,
-    skip: false
+    skip: false,
   }),
 
   methods: {
     onOptionClick (index) {
-      this.$emit('continue', index)
+      if (this.isTyping) return
+
+      this.choose(index)
     },
 
     onOptionSelect (index) {
-      this.active = index
+      this.select(index)
     },
 
     onMessageClick () {
@@ -139,50 +149,39 @@ export default defineComponent({
       this.isTyping = false
       this.skip = false
     },
+
+    confirm () {
+      if (this.isTyping) return this.skip = true
+
+      this.choose()
+    },
+
+    choose (index) {
+      setTimeout(() => this.activeChoice = 0, 400)
+
+      this.$emit('continue', index ?? this.activeChoice)
+    },
+
+    select (index) {
+      if (index < 0) return
+      if (index > this.choices.length - 1) return
+
+      this.activeChoice = index
+    },
+
+    selectPrevious () {
+      this.select(this.activeChoice - 1)
+    },
+
+    selectNext () {
+      this.select(this.activeChoice + 1)
+    }
   }
 })
 </script>
 
 <style lang="scss">
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400&display=swap');
-
-@mixin responsive($breakpoint) {
-  @if ($breakpoint == desktop) {
-    @media (min-width: 901px) { @content }
-  }
-  @if ($breakpoint == tablet) {
-    @media (max-width: 900px) { @content }
-  }
-  @if ($breakpoint == mobile) {
-    @media (max-width: 600px) { @content }
-  }
-}
-
-@font-face{
-    font-family: 'Source Code Variable';
-    font-weight: 200 900;
-    font-style: normal;
-    font-stretch: normal;
-    src: url('/fonts/SourceCodeVariable-Roman.ttf.woff2') format('woff2'),
-         url('/fonts/SourceCodeVariable-Roman.ttf.woff') format('woff'),
-         url('/fonts/SourceCodeVariable-Roman.ttf') format('truetype');
-}
-
-@font-face{
-    font-family: 'Source Code Variable';
-    font-weight: 200 900;
-    font-style: italic;
-    font-stretch: normal;
-    src: url('/fonts/SourceCodeVariable-Italic.ttf.woff2') format('woff2'),
-         url('/fonts/SourceCodeVariable-Italic.ttf.woff') format('woff'),
-         url('/fonts/SourceCodeVariable-Italic.ttf') format('truetype');
-}
-
 .g-dialogue {
-  // transform-style: preserve-3d;
-  // transform: perspective(500px) rotateX(10deg);
-  // transform-origin: 50% 100%;
-
   &__container {
     margin: auto;
     max-width: 500px;
@@ -209,36 +208,6 @@ export default defineComponent({
     }
   }
 
-  &__choice {
-    position: relative;
-    margin-bottom: 10px;
-    padding: 10px 15px;
-    background-color: rgba(black, .5);
-    border: 0;
-    text-align: left;
-    cursor: pointer;
-
-    &:before {
-      content: "";
-      position: absolute;
-      left: 12px;
-      top: 22px;
-      height: 10px;
-      width: 0%;
-      background: rgba(white, .1);
-      transition: .2s ease-out width;
-    }
-
-    &--selected {
-      &:before { width: 75%; }
-    }
-
-    @include responsive(desktop) {
-      margin-bottom: 20px;
-      padding: 10px 20px;
-    }
-  }
-
   &__message {
     flex: 1 100%;
     padding: 15px;
@@ -246,7 +215,8 @@ export default defineComponent({
     position: relative;
     background-color: rgba(black, .5);
     min-height: 100px;
-    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
 
     @include responsive(desktop) {
       padding: 20px;
@@ -263,20 +233,25 @@ export default defineComponent({
   &--show-underscore {
     .g-dialogue {
       &__message {
-        .g-dialogue-text--body {
-          &:after {
-            content: "_";
-            color: white;
-            font-family: 'Source Code Variable';
-            font-weight: 800;
-            font-size: 14px;
-            animation: underscore;
-            animation-duration: 1s;
-            animation-iteration-count: infinite;
-            animation-timing-function: steps(2, jump-none);
-          }
+        cursor: pointer;
+        &:after {
+          content: "_";
+          color: white;
+          font-family: 'Source Code Variable';
+          font-weight: 800;
+          font-size: 14px;
+          animation: underscore;
+          animation-duration: 1s;
+          animation-iteration-count: infinite;
+          animation-timing-function: steps(2, jump-none);
         }
       }
+    }
+
+    &--perspective {
+      transform-style: preserve-3d;
+      transform: perspective(500px) rotateX(10deg);
+      transform-origin: 50% 100%;
     }
   }
 
@@ -300,6 +275,42 @@ export default defineComponent({
   @keyframes underscore {
     0% { opacity: 0; }
     100% { opacity: 1; }
+  }
+
+  .choices-enter-active,
+  .choices-leave-active {
+    transition: opacity .2s ease, transform .2s ease;
+
+    .g-dialogue-choice {
+      transition: opacity .2s;
+
+      &--selected { transition: opacity .2s .2s, transform .2s ease; }
+    }
+
+    .g-dialogue-cursor {
+      transition: opacity .2s;
+    }
+  }
+
+  .choices-leave-active {
+    transition: opacity .2s ease .2s, transform .2s ease;
+  }
+
+  .choices-enter-from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+
+  .choices-leave-to {
+    .g-dialogue-choice {
+      opacity: 0;
+
+      &--selected { transform: scale(1.1); }
+    }
+
+    .g-dialogue-cursor {
+      opacity: 0;
+    }
   }
 }
 
@@ -341,6 +352,37 @@ export default defineComponent({
     &--subhead {
       font-size: 16px;
     }
+  }
+}
+
+.g-dialogue-choice {
+  position: relative;
+  margin-bottom: 10px;
+  padding: 10px 15px;
+  background-color: rgba(black, .5);
+  border: 0;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: rgba(white, .0);
+
+  &:before {
+    content: "";
+    position: absolute;
+    left: 12px;
+    top: 22px;
+    height: 10px;
+    width: 0%;
+    background: rgba(white, .1);
+    transition: .1s ease width;
+  }
+
+  &--selected {
+    &:before { width: 75%; }
+  }
+
+  @include responsive(desktop) {
+    margin-bottom: 20px;
+    padding: 10px 20px;
   }
 }
 

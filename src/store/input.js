@@ -1,8 +1,9 @@
 import { ref, computed } from 'vue'
-import { Vector2 } from 'three'
+import { Vector2, EventDispatcher } from 'three'
 
 const axis = ref(new Vector2())
 const pressedKeys = ref([])
+const dispatcher = new EventDispatcher()
 
 const setPrimaryAxis = (direction) => {
   axis.value.x = direction.x
@@ -14,6 +15,7 @@ const LEFT_KEYS = [ 'a', 'ArrowLeft' ]
 const DOWN_KEYS = [ 's', 'ArrowDown' ]
 const RIGHT_KEYS = [ 'd', 'ArrowRight' ]
 const MOVEMENT_KEYS = [ ...UP_KEYS, ...LEFT_KEYS, ...RIGHT_KEYS, ...DOWN_KEYS ]
+const CONFIRM_KEYS = [ ' ', 'Enter' ]
 
 const onKeydown = event => {
   const { key } = event
@@ -34,6 +36,10 @@ const onKeydown = event => {
 
     setPrimaryAxis(direction)
   }
+
+  if (CONFIRM_KEYS.includes(key)) {
+    dispatcher.dispatchEvent({ type: 'button:down', button: 'confirm' })
+  }
 }
 
 const onKeyup = event => {
@@ -45,11 +51,15 @@ const onKeyup = event => {
 
   pressedKeys.value.splice(index, 1)
 
-  const x = pressedKeys.value.some(k => [ ...LEFT_KEYS, ...RIGHT_KEYS ].includes(k)) ? axis.value.x : 0
-  const y = pressedKeys.value.some(k => [ ...UP_KEYS, ...DOWN_KEYS ].includes(k)) ? axis.value.y : 0
+  const x = pressedKeys.value.some(k =>
+    [ ...LEFT_KEYS, ...RIGHT_KEYS ].includes(k)
+  ) ? axis.value.x : 0
+
+  const y = pressedKeys.value.some(k =>
+    [ ...UP_KEYS, ...DOWN_KEYS ].includes(k)
+  ) ? axis.value.y : 0
 
   setPrimaryAxis({ x, y })
-
 }
 
 export const initInput = () => {
@@ -62,7 +72,12 @@ export const destroyInput = () => {
   document.resetPrimaryAxisEventListener('keyup', onKeyup)
 }
 
+const subscribe = (type, listener) => dispatcher.addEventListener(type, listener)
+const unsubscribe = (type, listener) => dispatcher.removeEventListener(type, listener)
+
 export const useInput = () => ({
   axis: computed(() => axis.value),
-  setPrimaryAxis
+  setPrimaryAxis,
+  subscribe,
+  unsubscribe
 })

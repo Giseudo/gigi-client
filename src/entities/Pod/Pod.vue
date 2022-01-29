@@ -1,5 +1,5 @@
 <template>
-  <Group ref="transform">
+  <Group ref="transform" :position="position">
     <FbxModel
       :src="podModel"
       @load="onLoadModel"
@@ -15,38 +15,55 @@
 </template>
 
 <script>
-import { defineComponent, ref, onMounted } from 'vue'
+import { Vector3 } from 'three'
+import { defineComponent, ref, onMounted, onBeforeUnmount } from 'vue'
 import { PodFaceShaderMaterial } from './'
 import { BlockShaderMaterial } from '@/materials'
 import podModel from './pod-model.fbx?url'
 import podFace from './pod-face-sdf.png?url'
+import { initEntity } from '@/components/entitySetup'
 
 export default defineComponent({
   name: 'Pod',
 
-  setup () {
-    const transform = ref(null)
-    const bodyMaterial = ref(new BlockShaderMaterial({
-      displace: { x: 0, y: 0, z: 0 }
-    }))
-    const faceMaterial = ref(new PodFaceShaderMaterial({
-      faceTexture: podFace
-    }))
+  setup (props) {
+    const { transform, update, moveTo, lookAt, positionOffset, lookAtOffset } = initEntity(props)
+    const bodyMaterial = ref(new BlockShaderMaterial({ displace: { x: 0, y: 0, z: 0 } }))
+    const faceMaterial = ref(new PodFaceShaderMaterial({ faceTexture: podFace }))
 
-    onMounted(() => {
-      transform.value = transform.value.group
+    update(time => {
+      const t = (Math.cos(time) + 1) / 2
+
+      positionOffset.y = t * .005
+      lookAtOffset.y = t * .15
     })
 
     return {
       transform,
-      bodyMaterial,
       podModel,
+      bodyMaterial,
+      moveTo,
+      lookAt,
+      update,
       faceMaterial
+    }
+  },
+
+  props: {
+    speed: {
+      type: Number,
+      default: 2
+    },
+
+    position: {
+      type: [ Object, Vector3 ],
+      default: () => ({ x: 0, y: 0, z: 0 })
     }
   },
 
   methods: {
     onLoadModel (model) {
+
       model.traverse(node => {
         if (!node.isMesh) return
 

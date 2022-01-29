@@ -1,0 +1,21 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400&display=swap');
+
+@font-face{
+    font-family: 'Source Code Variable';
+    font-weight: 200 900;
+    font-style: normal;
+    font-stretch: normal;
+    src: url('/fonts/SourceCodeVariable-Roman.ttf.woff2') format('woff2'),
+         url('/fonts/SourceCodeVariable-Roman.ttf.woff') format('woff'),
+         url('/fonts/SourceCodeVariable-Roman.ttf') format('truetype');
+}
+
+@font-face{
+    font-family: 'Source Code Variable';
+    font-weight: 200 900;
+    font-style: italic;
+    font-stretch: normal;
+    src: url('/fonts/SourceCodeVariable-Italic.ttf.woff2') format('woff2'),
+         url('/fonts/SourceCodeVariable-Italic.ttf.woff') format('woff'),
+         url('/fonts/SourceCodeVariable-Italic.ttf') format('truetype');
+}

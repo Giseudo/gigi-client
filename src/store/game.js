@@ -1,10 +1,20 @@
-import { inject, provide, ref, onMounted } from 'vue'
+import { inject, provide, ref, onMounted, onBeforeUnmount } from 'vue'
+
+const UPDATE = 'game/UPDATE'
 
 export const initGame = () => {
   const time = ref(0)
   const deltaTime = ref(0)
   const renderer = ref(null)
   const camera = ref(null)
+
+  const update = (callback) => {
+    const { renderer, time, deltaTime } = useGame()
+    const loopCallback = () => callback(time.value, deltaTime.value)
+
+    onMounted(() => renderer.value.onBeforeRender(loopCallback))
+    onBeforeUnmount(() => renderer.value.offBeforeRender(loopCallback))
+  }
 
   const updateDeltaTime = ({ time: t }) => {
     time.value = t / 1000
@@ -20,6 +30,7 @@ export const initGame = () => {
   provide('deltaTime', deltaTime)
   provide('renderer', renderer)
   provide('camera', camera)
+  provide(UPDATE, update)
 
   onMounted(mounted)
 
@@ -33,5 +44,6 @@ export const useGame = () => ({
   time: inject('time'),
   deltaTime: inject('deltaTime'),
   renderer: inject('renderer'),
-  camera: inject('camera')
+  camera: inject('camera'),
+  update: inject(UPDATE),
 })

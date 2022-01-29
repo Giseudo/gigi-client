@@ -2,6 +2,7 @@ import { createApp } from 'vue'
 import { TroisJSVuePlugin } from 'troisjs'
 import App from './App.vue'
 import router from './router'
+import './styles/fonts.scss'
 import './socket/socket'
 
 Math.radians = (degrees) => degrees * Math.PI / 180

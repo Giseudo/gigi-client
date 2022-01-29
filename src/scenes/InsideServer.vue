@@ -39,7 +39,7 @@
 </template>
 
 <script>
-import { defineComponent } from 'vue'
+import { defineComponent, ref } from 'vue'
 import { Vector3 } from 'three'
 import { useGame, useInput, useNavigator, usePointer, useWindow } from '@/store'
 import { useGatewayService, useDialogueService } from '@/services'
@@ -57,20 +57,31 @@ export default defineComponent({
     Pod,
   },
   
-  setup () {
-    const { camera, renderer, time, deltaTime } = useGame()
+  setup (props) {
+    const { camera, deltaTime, update } = useGame()
     const { axis, setPrimaryAxis } = useInput()
     const { connectUserAgent } = useNavigator()
     const { fetchServices, selectPort, services, activePort } = useGatewayService()
     const { showDialogue, interact, interactedWithPod } = useDialogueService()
     const { isMobile } = useWindow()
     const { pointer } = usePointer()
+    const gatewayPosition = new Vector3()
+    const displacement = ref(0)
+
+    update(() => {
+      const t = displacement.value
+
+      camera.value.position.x = Math.sin(t) * (props.radius + 5.)
+      camera.value.position.z = Math.cos(t) * (props.radius + 5.)
+      camera.value.lookAt(gatewayPosition)
+    })
 
     return {
+      displacement,
+      gatewayPosition,
       pointer,
-      time,
       deltaTime,
-      renderer,
+      update,
       camera,
       axis,
       setPrimaryAxis,
@@ -86,15 +97,18 @@ export default defineComponent({
     }
   },
 
+  props: {
+    radius: {
+      type: Number,
+      default: 12,
+    }
+  },
+
   data: () => ({
-    podHeight: -.45,
-    radius: 12,
-    displacement: 0,
     touchDelta: 0,
     isLoading: true,
     isAnimating: false,
     isDragging: false,
-    gatewayPosition: new Vector3(),
   }),
 
   computed: {
@@ -104,7 +118,7 @@ export default defineComponent({
 
     showGateway () {
       return !this.isLoading || this.interactedWithPod
-    }
+    },
   },
 
   watch: {
@@ -127,16 +141,15 @@ export default defineComponent({
     },
 
     showDialogue (value) {
-      anime({
-        targets: this,
-        podHeight: value ? .25 : -.45,
-        duration: 1000,
-        easing: 'easeOutQuad'
-      })
+      const { pod } = this.$refs
+
+      const y = value ? 0 : -.45
+
+      pod.moveTo({ y })
 
       if (!value)
         this.isLoading = false
-    }
+    },
   },
 
   mounted () {
@@ -148,12 +161,11 @@ export default defineComponent({
   },
 
   beforeUnmount () {
-    // FIXME we need to remove manua camera children :(
+    // FIXME we need to remove manually camera children :(
     const { pod } = this.$refs
+
     this.camera.remove(pod.transform)
     this.selectPort(null)
-
-    this.renderer.offBeforeRender(this.onUpdate)
 
     this.pointer.unsubscribe('pointer-down', this.onPointerDown)
     this.pointer.unsubscribe('pointer-move', this.onPointerMove)
@@ -162,13 +174,14 @@ export default defineComponent({
 
   methods: {
     async init () {
-      await this.fetchServices()
       const { pod } = this.$refs
 
       this.camera.attach(this.$refs.pod.transform)
-      pod.transform.position.z = -.75
 
-      this.renderer.onBeforeRender(this.onUpdate)
+      pod.moveTo({ y: -.4, z: -.75 })
+      pod.lookAt(this.camera)
+
+      await this.fetchServices()
 
       if (this.interactedWithPod) {
         anime({
@@ -295,23 +308,6 @@ export default defineComponent({
       if (this.touchDelta > 0) this.onNext()
     },
 
-    onUpdate () {
-      const { pod } = this.$refs
-      const t = this.displacement
-
-      this.camera.position.x = Math.sin(t) * (this.radius + 5.)
-      this.camera.position.z = Math.cos(t) * (this.radius + 5.)
-      this.camera.lookAt(this.gatewayPosition)
-
-      if (pod) {
-        const podLookPosition = this.camera.position.clone()
-        podLookPosition.y += ((Math.cos(this.time * 100. * this.deltaTime) + 1) / 2) * .25
-
-        pod.transform.lookAt(podLookPosition)
-        pod.transform.position.y = this.podHeight + Math.sin(this.time * 100. * this.deltaTime) * .025
-      }
-    },
-
     /*
     // TODO Where this belongs?
     getOrientedAxis (direction) {
@@ -336,8 +332,6 @@ export default defineComponent({
 </script>
 
 <style lang="scss">
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400&display=swap');
-
 .server-network {
   &__active-service {
     position: absolute;
