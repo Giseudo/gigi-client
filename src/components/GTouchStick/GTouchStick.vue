@@ -83,6 +83,26 @@ export default {
       this.isDragging = false
       this.$emit('move', this.direction)
     }
+
+    /*
+    // TODO Where this belongs?
+    getOrientedAxis (direction) {
+      if (!this.camera) return direction
+
+      const right = new Vector3(1, 0, 0)
+        .applyQuaternion(this.camera.quaternion)
+      right.y = 0
+      right.normalize()
+
+      const forward = new Vector3(0, 0, -1)
+        .applyQuaternion(this.camera.quaternion)
+      forward.y = 0
+      forward.normalize()
+
+      return right.multiplyScalar(direction.x)
+        .add(forward.multiplyScalar(direction.y))
+    }
+    */
   }
 }
 </script>

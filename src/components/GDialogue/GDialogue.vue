@@ -184,7 +184,7 @@ export default defineComponent({
 .g-dialogue {
   &__container {
     margin: auto;
-    max-width: 500px;
+    max-width: 600px;
     display: flex;
     flex-flow: row wrap;
     justify-content: flex-end;
@@ -196,7 +196,7 @@ export default defineComponent({
     display: flex;
     flex-flow: column;
     width: 100%;
-    max-width: 250px;
+    max-width: 300px;
 
     .g-dialogue-cursor {
       position: absolute;

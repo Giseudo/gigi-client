@@ -2,7 +2,7 @@
   <Renderer ref="renderer" resize="window" >
     <Camera :fov="80" />
     <Scene>
-      <RouterView v-if="!isLoading" />
+      <RouterView />
     </Scene>
      <EffectComposer>
       <RenderPass />
@@ -20,11 +20,10 @@
 </template>
 
 <script>
-import { defineComponent, onBeforeUnmount } from 'vue'
+import { defineComponent, ref, watch, onMounted } from 'vue'
 import { GDialogue } from '@/components'
-import { initGame, initPointer, initWindow, initNavigator, initInput, useInput } from '@/store'
-import { useAuthService } from '@/services/auth'
-import { initDialogueService, useDialogueService, destroyDialogueService } from '@/services/dialogue'
+import { initGame, initWindow, initNavigator, initInput, useInput } from '@/store'
+import { initDialogueService, useDialogueService } from '@/services/dialogue'
 
 export default defineComponent({
   name: 'App',
@@ -35,66 +34,39 @@ export default defineComponent({
 
   setup () {
     const { renderer } = initGame()
-    const { login } = useAuthService()
     const { message, showDialogue, continueDialogue } = useDialogueService()
-    const { axis, subscribe } = useInput()
+    const { axis, buttonDown } = useInput()
+    const dialogue = ref(null)
 
     initWindow()
     initNavigator()
-    initPointer()
     initInput()
     initDialogueService()
 
-    onBeforeUnmount(() => {
-      destroyDialogueService()
+    // Show camera's children on scene
+    onMounted(() => renderer.value.scene.add(renderer.value.camera))
+
+    buttonDown(({ button }) => {
+      if (button === 'confirm') {
+        dialogue.value?.confirm()
+      }
+    })
+
+    watch(axis.value, (value) => {
+      const { y } = value
+
+      if (y > 0) dialogue.value?.selectPrevious()
+      if (y < 0) dialogue.value?.selectNext()
     })
 
     return {
+      dialogue,
       axis,
       renderer,
-      login,
-      subscribe,
       message,
       showDialogue,
       continueDialogue
     }
-  },
-
-  watch: {
-    'axis.y' (value) {
-      const { dialogue } = this.$refs
-
-      if (!dialogue) return
-
-      if (value > 0) dialogue.selectPrevious()
-      if (value < 0) dialogue.selectNext()
-    }
-  },
-
-  data: () => ({
-    isLoading: true
-  }),
-
-  mounted () {
-    this.init()
-  },
-
-  methods: {
-    async init () {
-      await this.login('7d762570-760d-11ec-a915-ef8a0b584cc1')
-
-      this.isLoading = false
-
-      // Show camera's children on scene
-      this.renderer.scene.add(this.renderer.camera)
-
-      this.subscribe('button:down', ({ button }) => {
-        const { dialogue } = this.$refs
-
-        if (button === 'confirm')
-          dialogue?.confirm()
-      })
-    },
   }
 })
 </script>

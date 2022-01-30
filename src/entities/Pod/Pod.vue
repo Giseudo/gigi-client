@@ -7,7 +7,7 @@
     <Sphere
       ref="sphere"
       :scale="{ x: .1, y: .1, z: .1 }"
-      @click="$emit('click')"
+      @click="onClick"
     >
       <BasicMaterial :props="{ transparent: true, depthWrite: false, opacity: 0 }" />
     </Sphere>
@@ -16,12 +16,12 @@
 
 <script>
 import { Vector3 } from 'three'
-import { defineComponent, ref, onMounted, onBeforeUnmount } from 'vue'
+import { defineComponent, ref } from 'vue'
 import { PodFaceShaderMaterial } from './'
 import { BlockShaderMaterial } from '@/materials'
+import { initEntity } from '@/entities'
 import podModel from './pod-model.fbx?url'
 import podFace from './pod-face-sdf.png?url'
-import { initEntity } from '@/components/entitySetup'
 
 export default defineComponent({
   name: 'Pod',
@@ -76,6 +76,10 @@ export default defineComponent({
 
       this.$emit('load', model)
     },
+
+    onClick () {
+      this.$emit('click')
+    }
   }
 })
 </script>

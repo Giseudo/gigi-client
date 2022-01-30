@@ -55,7 +55,7 @@
 </template>
 
 <script>
-import { defineComponent, defineAsyncComponent } from 'vue'
+import { defineComponent, defineAsyncComponent, ref, computed } from 'vue'
 import { initServer } from './'
 import { usePointer, useGame, useWindow } from '@/store'
 import { Vector3, Color } from 'three'
@@ -75,9 +75,12 @@ export default defineComponent({
 
   setup () {
     const { activePort, setActivePort, transform } = initServer()
-    const { pointer } = usePointer()
+    const { pointer, pointerDown, pointerMove, pointerUp } = usePointer()
     const { deltaTime, time } = useGame()
     const { isMobile } = useWindow()
+    const canDrag = ref(false)
+    const isDragging = ref(false)
+    const delta = { x: 0, y: 0 }
 
     const gatewayMaterial = {
       vertexShader,
@@ -88,7 +91,56 @@ export default defineComponent({
       },
     }
 
+    const speed = computed(() => isMobile ? .05 : .2)
+
+    pointerDown(() => {
+      if (!canDrag.value) return
+
+      isDragging.value = true
+    })
+
+    pointerMove(({ movementX, movementY }) => {
+      if (!isDragging.value) return
+
+      delta.x = movementY * deltaTime.value * speed.value
+      delta.y = movementX * deltaTime.value * speed.value
+ 
+      if (Math.abs(transform.value.rotation.x + delta.x) < Math.PI / 3)
+        transform.value.rotation.x += delta.x
+
+      transform.value.rotation.y += delta.y
+    })
+
+    pointerUp(() => {
+      isDragging.value = false
+
+      let t = 1
+
+      const animate = () => {
+        const step = Math.sin(t)
+        t -= 0.05
+
+        if (step <= 0 || isDragging.value) {
+          delta.x = 0
+          delta.y = 0
+
+          return window.cancelAnimationFrame(animate)
+        }
+
+        if (Math.abs(transform.value.rotation.x + delta.x) < Math.PI / 3)
+          transform.value.rotation.x += delta.x * step
+
+        transform.value.rotation.y += delta.y * step
+
+        window.requestAnimationFrame(animate)
+      }
+
+      animate()
+    })
+
     return {
+      canDrag,
+      isDragging,
       transform,
       activePort,
       setActivePort,
@@ -111,18 +163,9 @@ export default defineComponent({
     }
   },
 
-  computed: {
-    speed () {
-      return this.isMobile ? .05 : .2
-    }
-  },
-
   data: (vm) => ({
     rotation: { x: 0, y: 0, z: 0 },
     portOffset: { x: 0, y: 0, z: vm.radius + .5 },
-    delta: { x: 0, y: 0 },
-    isDragging: false,
-    canDrag: false,
     ports: [
       { number: 80, disabled: false },
       { number: 443, disabled: false },
@@ -142,16 +185,6 @@ export default defineComponent({
 
     sshPort.group.rotateOnAxis(new Vector3(0, 1, 0), Math.radians(180))
     sshPort.group.rotateOnAxis(new Vector3(1, 0, 0), Math.radians(-15))
-
-    this.pointer.subscribe('pointer-down', this.onPointerDown)
-    this.pointer.subscribe('pointer-move', this.onPointerMove)
-    this.pointer.subscribe('pointer-up', this.onPointerUp)
-  },
-
-  unmounted () {
-    this.pointer.unsubscribe('pointer-down', this.onPointerDown)
-    this.pointer.unsubscribe('pointer-move', this.onPointerMove)
-    this.pointer.unsubscribe('pointer-up', this.onPointerUp)
   },
 
   methods: {
@@ -193,56 +226,6 @@ export default defineComponent({
 
     onRedirect () {
       this.setActivePort(443)
-    },
-
-    onPointerDown () {
-      if (!this.canDrag) return
-
-      this.isDragging = true
-    },
-
-    onPointerMove ({ message }) {
-      if (!this.isDragging) return
-
-      const { transform } = this.$refs
-
-      this.delta = {
-        x: message.movementY * this.deltaTime * this.speed,
-        y: message.movementX * this.deltaTime * this.speed
-      }
- 
-      if (Math.abs(transform.rotation.x + this.delta.x) < Math.PI / 3)
-        transform.rotation.x += this.delta.x
-
-      transform.rotation.y += this.delta.y
-    },
-
-    onPointerUp () {
-      const { transform } = this.$refs
-
-      this.isDragging = false
-
-      let t = 1
-
-      const animate = () => {
-        const step = Math.sin(t)
-        t -= 0.05
-
-        if (step <= 0 || this.isDragging) {
-          this.delta = { x: 0, y: 0 }
-
-          return window.cancelAnimationFrame(animate)
-        }
-
-        if (Math.abs(transform.rotation.x + this.delta.x) < Math.PI / 3)
-          transform.rotation.x += this.delta.x * step
-
-        transform.rotation.y += this.delta.y * step
-
-        window.requestAnimationFrame(animate)
-      }
-
-      animate()
     },
 
     onPointerEnter () {

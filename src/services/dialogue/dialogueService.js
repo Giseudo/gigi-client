@@ -22,10 +22,6 @@ export default {
     socket.off('dialogue:end', this.onEndDialogue)
   },
 
-  interact () {
-    socket.emit('interact')
-  },
-
   choose (index) {
     socket.emit('dialogue:choose', index)
   },

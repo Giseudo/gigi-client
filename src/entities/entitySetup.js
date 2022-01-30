@@ -7,7 +7,7 @@ const LOOK_AT = 'entity/LOOK_AT'
 const MOVE_TO = 'entity/MOVE_TO'
 const UPDATE = 'entity/UPDATE'
 
-export const initEntity = (props) => {
+export const initEntity = ({ speed = 2 }) => {
   const { update } = useGame()
 
   const transform = ref(null)
@@ -32,7 +32,7 @@ export const initEntity = (props) => {
 
   update((_, deltaTime) => {
     const smoothPosition = transform.value.position.clone()
-      .lerp(desiredPosition, deltaTime * props.speed)
+      .lerp(desiredPosition, deltaTime * speed)
 
     const { x, y, z } = smoothPosition
 

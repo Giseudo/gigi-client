@@ -1,5 +1,12 @@
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { Vector2, EventDispatcher } from 'three'
+
+const UP_KEYS = [ 'w', 'ArrowUp' ]
+const LEFT_KEYS = [ 'a', 'ArrowLeft' ]
+const DOWN_KEYS = [ 's', 'ArrowDown' ]
+const RIGHT_KEYS = [ 'd', 'ArrowRight' ]
+const MOVEMENT_KEYS = [ ...UP_KEYS, ...LEFT_KEYS, ...RIGHT_KEYS, ...DOWN_KEYS ]
+const CONFIRM_KEYS = [ ' ', 'Enter' ]
 
 const axis = ref(new Vector2())
 const pressedKeys = ref([])
@@ -9,13 +16,6 @@ const setPrimaryAxis = (direction) => {
   axis.value.x = direction.x
   axis.value.y = direction.y
 }
-
-const UP_KEYS = [ 'w', 'ArrowUp' ]
-const LEFT_KEYS = [ 'a', 'ArrowLeft' ]
-const DOWN_KEYS = [ 's', 'ArrowDown' ]
-const RIGHT_KEYS = [ 'd', 'ArrowRight' ]
-const MOVEMENT_KEYS = [ ...UP_KEYS, ...LEFT_KEYS, ...RIGHT_KEYS, ...DOWN_KEYS ]
-const CONFIRM_KEYS = [ ' ', 'Enter' ]
 
 const onKeydown = event => {
   const { key } = event
@@ -63,21 +63,24 @@ const onKeyup = event => {
 }
 
 export const initInput = () => {
-  document.addEventListener('keydown', onKeydown)
-  document.addEventListener('keyup', onKeyup)
+  onMounted(() => {
+    document.addEventListener('keydown', onKeydown)
+    document.addEventListener('keyup', onKeyup)
+  })
+
+  onBeforeUnmount(() => {
+    document.removeEventListener('keydown', onKeydown)
+    document.removeEventListener('keyup', onKeyup)
+  })
 }
 
-export const destroyInput = () => {
-  document.resetPrimaryAxisEventListener('keydown', onKeydown)
-  document.resetPrimaryAxisEventListener('keyup', onKeyup)
+const buttonDown = (callback) => {
+  onMounted(() => dispatcher.addEventListener('button:down', callback))
+  onBeforeUnmount(() => dispatcher.removeEventListener('button:down', callback))
 }
-
-const subscribe = (type, listener) => dispatcher.addEventListener(type, listener)
-const unsubscribe = (type, listener) => dispatcher.removeEventListener(type, listener)
 
 export const useInput = () => ({
   axis: computed(() => axis.value),
   setPrimaryAxis,
-  subscribe,
-  unsubscribe
+  buttonDown,
 })

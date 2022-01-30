@@ -1,15 +1,13 @@
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import service from './dialogueService'
 
 // state
 const message = ref({})
 const showDialogue = ref(false)
-const interactedWithPod = ref(false)
 
 // getters
 const getMessage = computed(() => message.value)
 const getShowDialogue = computed(() => showDialogue.value)
-const getInteractedWithPod = computed(() => interactedWithPod.value)
 
 // mutations
 const setMessage = value => message.value = value
@@ -18,10 +16,6 @@ const closeDialogue = () => showDialogue.value = false
 const toggleDialogue = () => showDialogue.value = !showDialogue.value
 
 // actions
-const interact = () => {
-  service.interact()
-}
-
 const continueDialogue = (index = 0) => {
   service.choose(index)
 }
@@ -29,7 +23,6 @@ const continueDialogue = (index = 0) => {
 export const initDialogueService = async () => {
   const onDialogueChange = (message) => {
     if (!message) {
-      interactedWithPod.value = true
       return closeDialogue()
     }
 
@@ -39,24 +32,17 @@ export const initDialogueService = async () => {
     setMessage(message)
   }
 
-  await service.init(onDialogueChange)
-}
-
-export const destroyDialogueService = async () => {
-  service.destroy()
+  onMounted(() => service.init(onDialogueChange))
+  onBeforeUnmount(() => service.destroy())
 }
 
 export const useDialogueService = () => ({
   message: getMessage,
   showDialogue: getShowDialogue,
-  interactedWithPod: getInteractedWithPod,
 
   openDialogue,
   closeDialogue,
   toggleDialogue,
 
-  initDialogueService,
-  destroyDialogueService,
-  interact,
   continueDialogue,
 })

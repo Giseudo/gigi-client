@@ -50,7 +50,7 @@ import anime from 'animejs'
 export default defineComponent({
   name: 'Service',
 
-  emits: [ 'click', 'toggle' ],
+  emits: [ 'click' ],
 
   components: {
     ProjectionMaterial,
@@ -86,8 +86,28 @@ export default defineComponent({
   },
 
   watch: {
-    activePort (number) {
-      const value = number === this.port
+    activePort () {
+      this.animate()
+    }
+  },
+
+  data: () => ({
+    font,
+    isLoading: true,
+    direction: { x: 0, y: 0, z: 0 },
+  }),
+
+  methods: {
+    init () {
+      const forward = new Vector3(0, 0, -1)
+
+      this.direction = this.transform.group.getWorldDirection(forward)
+
+      this.animate()
+    },
+
+    animate () {
+      const value = this.activePort === this.port
       const { screen, text, screenMaterial } = this.$refs
       const { uFade } = screenMaterial.materialProps.uniforms
       const width = { x: value ? 1 : 0 }
@@ -130,21 +150,6 @@ export default defineComponent({
         complete: () => this.isLoading = !value
       })
 
-      this.$emit('toggle', { active: value, port: this.port })
-    }
-  },
-
-  data: () => ({
-    font,
-    isLoading: true,
-    direction: { x: 0, y: 0, z: 0 },
-  }),
-
-  methods: {
-    init () {
-      const forward = new Vector3(0, 0, -1)
-
-      this.direction = this.transform.group.getWorldDirection(forward)
     },
 
     onLoadText (mesh) {
