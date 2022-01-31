@@ -17,34 +17,58 @@
     :speaker="message.speaker"
     @continue="continueDialogue"
   />
+
+  <GTextDialog
+    v-if="showTextDialog"
+    @confirm="onTextDialogConfirmation"
+  />
 </template>
 
 <script>
-import { defineComponent, ref, watch, onMounted } from 'vue'
-import { GDialogue } from '@/components'
-import { initGame, initWindow, initNavigator, initInput, useInput } from '@/store'
+import { defineComponent, ref, watch, onMounted, onBeforeUnmount } from 'vue'
+import { GDialogue, GTextDialog } from '@/components'
+import { initGame, initWindow, initNavigator, initInput, useInput, useSocket } from '@/store'
 import { initDialogueService, useDialogueService } from '@/services/dialogue'
 
 export default defineComponent({
   name: 'App',
 
   components: {
-    GDialogue
+    GDialogue,
+    GTextDialog
   },
 
   setup () {
     const { renderer } = initGame()
     const { message, showDialogue, continueDialogue } = useDialogueService()
     const { axis, buttonDown } = useInput()
+    const { socket } = useSocket()
     const dialogue = ref(null)
+    const showTextDialog = ref(false)
 
     initWindow()
     initNavigator()
     initInput()
     initDialogueService()
 
-    // Show camera's children on scene
-    onMounted(() => renderer.value.scene.add(renderer.value.camera))
+    const onOpenTextDialog = () => {
+      showTextDialog.value = true
+    }
+
+    const onAuthenticated = (token) => console.log('logged in:', token)
+
+    onMounted(() => {
+      // Show camera's children on scene
+      renderer.value.scene.add(renderer.value.camera)
+
+      socket.value.on('dialog:text', onOpenTextDialog)
+      socket.value.on('auth:token', onAuthenticated)
+    })
+
+    onBeforeUnmount(() => {
+      socket.value.off('dialog:text', onOpenTextDialog)
+      socket.value.off('auth:token', onAuthenticated)
+    })
 
     buttonDown(({ button }) => {
       if (button === 'confirm') {
@@ -59,13 +83,21 @@ export default defineComponent({
       if (y < 0) dialogue.value?.selectNext()
     })
 
+    const onTextDialogConfirmation = (value) => {
+      showTextDialog.value = false
+
+      socket.value.emit('auth:login', value)
+    }
+
     return {
       dialogue,
       axis,
       renderer,
       message,
       showDialogue,
-      continueDialogue
+      showTextDialog,
+      continueDialogue,
+      onTextDialogConfirmation
     }
   }
 })

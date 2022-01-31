@@ -46,12 +46,14 @@ export default defineComponent({
 
   computed: {
     showUnderscore () {
-      return this.isTyping || !this.isTyping && this.choices.length <= 1
+      return !this.showChoices // this.isTyping || !this.isTyping && this.choices.length <= 1
     },
 
+    /*
     showChoices () {
       return !this.isTyping && this.choices.length > 1
     },
+    */
 
     classes () {
       return {
@@ -125,6 +127,7 @@ export default defineComponent({
     activeChoice: 0,
     isTyping: true,
     skip: false,
+    showChoices: false
   }),
 
   methods: {
@@ -139,10 +142,10 @@ export default defineComponent({
     },
 
     onMessageClick () {
-      if (this.isTyping) return this.skip = true
-      if (this.choices.length > 1) return
+      if (this.showChoices) return
 
-      this.$emit('continue', 0)
+      this.activeChoice = 0
+      this.confirm()
     },
 
     onTypewriteEnd () {
@@ -151,13 +154,19 @@ export default defineComponent({
     },
 
     confirm () {
-      if (this.isTyping) return this.skip = true
+      if (this.isTyping)
+        return this.skip = true
+
+      if (!this.showChoices && this.choices.length > 1)
+        return this.showChoices = true
 
       this.choose()
     },
 
     choose (index) {
       setTimeout(() => this.activeChoice = 0, 400)
+
+      this.showChoices = false
 
       this.$emit('continue', index ?? this.activeChoice)
     },
