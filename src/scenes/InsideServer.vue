@@ -25,6 +25,7 @@ import { Gateway } from '@/entities/Gateway'
 import { Pod } from '@/entities/Pod'
 import { SkyboxMaterial } from '@/materials'
 import { useSocket } from '@/store'
+import { useRouter } from 'vue-router'
 import anime from 'animejs'
 
 export default defineComponent({
@@ -40,20 +41,37 @@ export default defineComponent({
     const { camera, deltaTime, update } = useGame()
     const { fetchServices, selectPort, services, activePort } = useGatewayService()
     const { isMobile } = useWindow()
-    const { pointer, pointerDown, pointerUp, pointerMove } = usePointer()
+    const { pointerDown, pointerUp, pointerMove } = usePointer()
     const { socket } = useSocket()
+    const { router } = useRouter()
     const pod = ref(null)
     const gatewayPosition = new Vector3()
     const displacement = ref(0)
     const touchDelta = ref(0)
     const isDragging = ref(false)
     const isAnimating = ref(false)
+    const showGateway = ref(false)
 
     onMounted(async () => {
       camera.value.attach(pod.value.transform)
 
+      anime({
+        targets: camera.value.position,
+        y: 3,
+        duration: 1000,
+        easing: 'easeOutQuad',
+      })
+
       pod.value.moveTo({ y: -.4, z: -.75 })
       pod.value.lookAt(camera.value)
+
+      if (services.value.length) {
+        showGateway.value = true
+
+        const [ first ] = services.value
+
+        selectPort(first?.port)
+      }
     })
 
     // FIXME we need to remove manually camera children :(
@@ -127,18 +145,46 @@ export default defineComponent({
 
     const slideNext = () => slideTo(currentIndex.value + 1)
 
+    const onPodClick = () => {
+      let port = activePort.value
+
+      socket.value.emit('pod:interact')
+
+      socket.value.once('dialogue:start', () => {
+        pod.value.moveTo({ y: 0 })
+
+        selectPort(null)
+      })
+
+      socket.value.once('dialogue:end', async () => {
+        pod.value.moveTo({ y: -.45 })
+
+        if (!services.value.length) {
+          await fetchServices()
+
+          const [ first ] = services.value
+
+          port = first?.port
+        }
+
+        showGateway.value = true
+        selectPort(port)
+      })
+    }
+
+    const onAccessService = (service) => {
+      console.log('accessed service on port', service.port)
+
+      router.push({ name: 'Playground' })
+    }
+
     return {
       pod,
-      displacement,
       gatewayPosition,
-      pointer,
-      camera,
       services,
-      isMobile,
-      selectPort,
-      fetchServices,
-      activePort,
-      socket,
+      showGateway,
+      onPodClick,
+      onAccessService
     }
   },
 
@@ -148,64 +194,5 @@ export default defineComponent({
       default: 12,
     }
   },
-
-  data: () => ({
-    isLoading: true,
-    isDragging: false,
-    showGateway: false,
-  }),
-
-  mounted () {
-    if (this.services.length) {
-      this.showGateway = true
-
-      const [ first ] = this.services
-
-      this.selectPort(first?.port)
-    }
-  },
-
-  methods: {
-    onAccessService (service) {
-      console.log('accessed service on port', service.port)
-
-      this.$router.push({ name: 'Playground' })
-    },
-
-    onPodClick () {
-      const { pod } = this.$refs
-      let port = this.activePort
-
-      this.socket.emit('pod:interact')
-
-      this.socket.once('dialogue:start', () => {
-        pod.moveTo({ y: 0 })
-
-        this.selectPort(null)
-      })
-
-      this.socket.once('dialogue:end', async() => {
-        pod.moveTo({ y: -.45 })
-
-        if (!this.services.length) {
-          await this.fetchServices()
-
-          const [ first ] = this.services
-
-          port = first?.port
-        }
-
-        this.showGateway = true
-        this.selectPort(port)
-
-        anime({
-          targets: this.camera.position,
-          y: 3,
-          duration: 1000,
-          easing: 'easeOutQuad',
-        })
-      })
-    },
-  }
 })
 </script>
