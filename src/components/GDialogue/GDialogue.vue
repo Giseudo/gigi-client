@@ -21,6 +21,21 @@
         </div>
       </transition>
 
+      <transition name="prompt" @enter="onPromptOpen">
+        <form class="g-dialogue-prompt" v-if="showPrompt" @submit.prevent="onPromptSubmit">
+          <input
+            type="text"
+            class="g-dialogue-prompt__input g-dialogue-prompt__input--text"
+            placeholder="Type here"
+            v-model="promptText"
+          />
+
+          <button class="g-dialogue-prompt__confirm">
+            OK
+          </button>
+        </form>
+      </transition>
+
       <div class="g-dialogue__message" @click="onMessageClick">
         <span class="g-dialogue-text g-dialogue-text--subhead">
           {{ speaker }}:
@@ -46,14 +61,8 @@ export default defineComponent({
 
   computed: {
     showUnderscore () {
-      return !this.showChoices // this.isTyping || !this.isTyping && this.choices.length <= 1
+      return !this.showChoices && !this.showPrompt
     },
-
-    /*
-    showChoices () {
-      return !this.isTyping && this.choices.length > 1
-    },
-    */
 
     classes () {
       return {
@@ -127,7 +136,9 @@ export default defineComponent({
     activeChoice: 0,
     isTyping: true,
     skip: false,
-    showChoices: false
+    showPrompt: false,
+    showChoices: false,
+    promptText: '',
   }),
 
   methods: {
@@ -143,6 +154,7 @@ export default defineComponent({
 
     onMessageClick () {
       if (this.showChoices) return
+      if (this.showPrompt) return
 
       this.activeChoice = 0
       this.confirm()
@@ -151,6 +163,21 @@ export default defineComponent({
     onTypewriteEnd () {
       this.isTyping = false
       this.skip = false
+    },
+
+    onPromptOpen (el, done) {
+      const input = el.querySelector('input')
+
+      input.focus()
+
+      done()
+    },
+
+    onPromptSubmit () {
+      this.$emit('prompt', this.promptText)
+
+      this.promptText = ''
+      this.showPrompt = false
     },
 
     confirm () {
@@ -163,7 +190,15 @@ export default defineComponent({
       this.choose()
     },
 
+    prompt (type) {
+      if (type === 'text') {
+        setTimeout(() => this.showPrompt = true, 400)
+      }
+    },
+
     choose (index) {
+      if (this.showPrompt) return
+
       setTimeout(() => this.activeChoice = 0, 400)
 
       this.showChoices = false
@@ -184,7 +219,7 @@ export default defineComponent({
 
     selectNext () {
       this.select(this.activeChoice + 1)
-    }
+    },
   }
 })
 </script>
@@ -321,6 +356,17 @@ export default defineComponent({
       opacity: 0;
     }
   }
+
+  .prompt-enter-active,
+  .prompt-leave-active {
+    transition: opacity .2s ease, transform .2s ease;
+  }
+
+  .prompt-enter-from,
+  .prompt-leave-to {
+    opacity: 0;
+    transform: translateX(-20px)
+  }
 }
 
 .g-dialogue-text {
@@ -392,6 +438,57 @@ export default defineComponent({
   @include responsive(desktop) {
     margin-bottom: 20px;
     padding: 10px 20px;
+  }
+}
+
+.g-dialogue-prompt {
+  width: 100%;
+  max-width: 420px;
+  margin: auto 0 auto auto;
+  display: flex;
+  margin-bottom: 10px;
+
+  &__input {
+    flex: 1;
+    height: 38px;
+    padding: 0 15px;
+    border: 0;
+    font-family: 'Source Code Variable';
+    font-weight: 600;
+    font-size: 13px;
+    margin-right: 10px;
+    width: 100%;
+  }
+
+  &__confirm {
+    width: 80px;
+    flex-shrink: 0;
+    padding: 0;
+    border: 0;
+    text-transform: uppercase;
+    font-family: 'Source Code Variable';
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: 5px;
+    text-indent: 5px;
+    background: rgba(black, .5);
+    color: white;
+  }
+
+  @include responsive(desktop) {
+    margin-bottom: 20px;
+
+    &__input {
+      font-size: 16px;
+      padding: 0 20px;
+      height: 44px;
+    }
+    &__confirm {
+      width: 120px;
+      letter-spacing: 10px;
+      text-indent: 10px;
+      font-size: 24px;
+    }
   }
 }
 

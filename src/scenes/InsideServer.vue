@@ -54,14 +54,6 @@ export default defineComponent({
 
       pod.value.moveTo({ y: -.4, z: -.75 })
       pod.value.lookAt(camera.value)
-
-      await fetchServices()
-
-      if (!services.value.length) return
-
-      const [ first ] = services.value
-
-      selectPort(first.port)
     })
 
     // FIXME we need to remove manually camera children :(
@@ -163,6 +155,16 @@ export default defineComponent({
     showGateway: false,
   }),
 
+  mounted () {
+    if (this.services.length) {
+      this.showGateway = true
+
+      const [ first ] = this.services
+
+      this.selectPort(first?.port)
+    }
+  },
+
   methods: {
     onAccessService (service) {
       console.log('accessed service on port', service.port)
@@ -172,7 +174,7 @@ export default defineComponent({
 
     onPodClick () {
       const { pod } = this.$refs
-      const prevPort = this.activePort
+      let port = this.activePort
 
       this.socket.emit('pod:interact')
 
@@ -182,11 +184,19 @@ export default defineComponent({
         this.selectPort(null)
       })
 
-      this.socket.once('dialogue:end', () => {
+      this.socket.once('dialogue:end', async() => {
         pod.moveTo({ y: -.45 })
 
+        if (!this.services.length) {
+          await this.fetchServices()
+
+          const [ first ] = this.services
+
+          port = first?.port
+        }
+
         this.showGateway = true
-        this.selectPort(prevPort)
+        this.selectPort(port)
 
         anime({
           targets: this.camera.position,

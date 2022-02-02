@@ -15,18 +15,15 @@
     :text="message.text"
     :choices="message.choices"
     :speaker="message.speaker"
-    @continue="continueDialogue"
-  />
-
-  <GTextDialog
-    v-if="showTextDialog"
-    @confirm="onTextDialogConfirmation"
+    @continue="onDialogueContinue"
+    @prompt="onDialogueReply"
   />
 </template>
 
 <script>
 import { defineComponent, ref, watch, onMounted, onBeforeUnmount } from 'vue'
 import { GDialogue, GTextDialog } from '@/components'
+import { useAuthService } from '@/services'
 import { initGame, initWindow, initNavigator, initInput, useInput, useSocket } from '@/store'
 import { initDialogueService, useDialogueService } from '@/services/dialogue'
 
@@ -43,31 +40,25 @@ export default defineComponent({
     const { message, showDialogue, continueDialogue } = useDialogueService()
     const { axis, buttonDown } = useInput()
     const { socket } = useSocket()
+    const { login, token } = useAuthService()
     const dialogue = ref(null)
-    const showTextDialog = ref(false)
+    const questionIdentifier = ref(null)
+    const showTextDialog = ref(false) // deprecated, merge with GDialogue
 
     initWindow()
     initNavigator()
     initInput()
     initDialogueService()
 
-    const onOpenTextDialog = () => {
-      showTextDialog.value = true
-    }
-
-    const onAuthenticated = (token) => console.log('logged in:', token)
-
     onMounted(() => {
       // Show camera's children on scene
       renderer.value.scene.add(renderer.value.camera)
 
-      socket.value.on('dialog:text', onOpenTextDialog)
-      socket.value.on('auth:token', onAuthenticated)
+      socket.value.on('dialogue:prompt', onDialoguePrompt)
     })
 
     onBeforeUnmount(() => {
-      socket.value.off('dialog:text', onOpenTextDialog)
-      socket.value.off('auth:token', onAuthenticated)
+      socket.value.off('dialogue:prompt', onDialoguePrompt)
     })
 
     buttonDown(({ button }) => {
@@ -83,11 +74,30 @@ export default defineComponent({
       if (y < 0) dialogue.value?.selectNext()
     })
 
-    const onTextDialogConfirmation = (value) => {
-      showTextDialog.value = false
+    const onDialogueContinue = continueDialogue
 
-      socket.value.emit('auth:login', value)
+    const onDialoguePrompt = (identifier, type) => {
+      dialogue.value?.prompt(type)
+
+      questionIdentifier.value = identifier
     }
+
+    const onDialogueReply = async (value) => {
+      if (questionIdentifier.value === 'request-access-code') {
+        showTextDialog.value = false
+
+        await login(value)
+
+        socket.value.auth.token = token.value
+        socket.value.disconnect().connect()
+
+        dialogue.value?.confirm()
+      }
+    }
+
+    socket.value.on('session', (value) => {
+      socket.value.io.opts.query.sessionId = value
+    })
 
     return {
       dialogue,
@@ -96,22 +106,23 @@ export default defineComponent({
       message,
       showDialogue,
       showTextDialog,
-      continueDialogue,
-      onTextDialogConfirmation
+      onDialogueContinue,
+      onDialogueReply
     }
   }
 })
 </script>
 
 <style lang="scss">
-body {
+body, html {
   margin: 0;
+  height: 100%;
 }
 
 #app {
   position: relative;
   width: 100%;
-  height: 100vh;
+  height: 100%;
   overflow: hidden;
 
   & > canvas {

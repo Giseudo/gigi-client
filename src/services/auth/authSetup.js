@@ -10,29 +10,29 @@ const getToken = computed(() => token.value)
 const getUser = computed(() => user.value)
 
 const login = async (id) => {
-  const [ error, data ] = await service.login(id)
+  const [ errors, data ] = await service.login(id)
 
-  if (!error) {
+  if (!errors) {
     const { token, user } = data
 
     setToken(token)
     setUser(user)
   }
 
-  return { error, data }
+  return { errors, data }
 }
 
 const register = async ({ username, email }) => {
-  const [ error, data ] = await service.register(username, email)
+  const [ errors, data ] = await service.register(username, email)
 
-  if (!error) {
+  if (!errors) {
     const { token, user } = data
 
     setToken(token)
     setUser(user)
   }
 
-  return { error, data }
+  return { errors, data }
 }
 
 export const useAuthService = () => ({
