@@ -41,9 +41,9 @@
 <script>
 import { defineComponent, ref } from 'vue'
 import { Vector3 } from 'three'
-import { BlockMaterial, ProjectionMaterial } from '@/materials'
+import { BlockMaterial, ProjectionMaterial } from '@/world/materials'
 import { useGatewayService } from '@/services'
-import { Spinner } from '@/entities/Spinner'
+import { Spinner } from '@/world/components/Spinner'
 import font from '@/assets/fonts/V5XtenderRegular.font?url'
 import anime from 'animejs'
 

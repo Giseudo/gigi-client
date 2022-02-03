@@ -44,19 +44,5 @@ body, html {
     left: 0;
     touch-action: none;
   }
-
-  & > .g-dialogue {
-    position: absolute;
-    bottom: 10px;
-    left: 10px;
-    right: 10px;
-    z-index: 10;
-
-    @include responsive(desktop) {
-      bottom: 40px;
-      left: 20px;
-      right: 20px;
-    }
-  }
 }
 </style>

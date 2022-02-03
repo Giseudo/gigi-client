@@ -9,7 +9,7 @@
 
 <script>
 import { defineComponent, ref, onMounted } from 'vue'
-import { BlockShaderMaterial } from '@/materials'
+import { BlockShaderMaterial } from '@/world/materials'
 
 export default defineComponent({
   name: 'UserAgent',

@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import CloudNetwork from '../scenes/CloudNetwork.vue'
-import InsideServer from '../scenes/InsideServer.vue'
-import Playground from '../scenes/Playground.vue'
+import CloudNetwork from '../world/scenes/CloudNetwork.vue'
+import InsideServer from '../world/scenes/InsideServer.vue'
+import Playground from '../world/scenes/Playground.vue'
 
 const routes = [
   {

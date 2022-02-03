@@ -23,7 +23,7 @@
 
 <script>
 import { defineComponent } from 'vue'
-import { useGame, usePointer } from '../store'
+import { useGame, usePointer } from '@/store'
 import { Vector3 } from 'three'
 import anime from 'animejs'
 

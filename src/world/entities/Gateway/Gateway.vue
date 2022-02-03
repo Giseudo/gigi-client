@@ -46,7 +46,7 @@
 <script>
 import { defineComponent, ref } from 'vue'
 import { Vector3, RingBufferGeometry } from 'three'
-import { BlockMaterial } from '@/materials'
+import { BlockMaterial } from '@/world/materials'
 import { useGame } from '@/store'
 import Service from './Service'
 

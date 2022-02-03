@@ -19,7 +19,7 @@ const typewriteAnimation = (el, binding) => {
   animate()
 }
 
-export const Typewrite = {
+export const typewrite = {
   mounted (el, binding) {
     typewriteAnimation(el, binding)
   },

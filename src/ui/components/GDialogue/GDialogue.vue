@@ -51,13 +51,13 @@
 
 <script>
 import { defineComponent } from 'vue'
-import { Typewrite } from '../../directives/Typewrite'
+import { typewrite } from '@/directives/typewrite'
 import anime from 'animejs'
 
 export default defineComponent({
   emits: [ 'continue' ],
 
-  directives: { Typewrite },
+  directives: { typewrite },
 
   computed: {
     showUnderscore () {

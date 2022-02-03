@@ -1,18 +1,21 @@
 <template>
-  <GDialogue ref="dialogue"
-    v-if="showDialogue"
-    :text="message.text"
-    :choices="message.choices"
-    :speaker="message.speaker"
-    @continue="onDialogueContinue"
-    @prompt="onDialogueReply"
-  />
+  <div class="ui">
+    <g-dialogue ref="dialogue"
+      class="ui__dialogue"
+      v-if="showDialogue"
+      :text="message.text"
+      :choices="message.choices"
+      :speaker="message.speaker"
+      @continue="onDialogueContinue"
+      @prompt="onDialogueReply"
+    />
+  </div>
 </template>
 
 <script>
 import { defineComponent, ref, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useAuth, initDialogue, useDialogue, useInput } from '@/store'
-import { GDialogue } from '@/components'
+import { GDialogue } from '@/ui/components'
 import socket from '@/socket'
 
 export default defineComponent({
@@ -77,7 +80,24 @@ export default defineComponent({
       onDialogueContinue,
       onDialogueReply
     }
-
   }
 })
 </script>
+
+<style lang="scss">
+.ui {
+  &__dialogue {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    z-index: 10;
+
+    @include responsive(desktop) {
+      bottom: 40px;
+      left: 20px;
+      right: 20px;
+    }
+  }
+}
+</style>

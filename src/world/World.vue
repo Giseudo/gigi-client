@@ -20,6 +20,7 @@ export default defineComponent({
     const { renderer } = initGame()
 
     onMounted(() => {
+      // add camera to scene, so its children become visible
       renderer.value.scene.add(renderer.value.camera)
     })
     

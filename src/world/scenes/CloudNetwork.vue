@@ -5,7 +5,7 @@
 <script>
 import { defineComponent } from 'vue'
 import { useGame, useWindow } from '@/store'
-import { Server } from '@/entities/Server'
+import { Server } from '@/world/entities/Server'
 import { Vector3 } from 'three'
 import anime from 'animejs'
 

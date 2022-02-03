@@ -18,8 +18,8 @@
 import { Vector3 } from 'three'
 import { defineComponent, ref } from 'vue'
 import { PodFaceShaderMaterial } from './'
-import { BlockShaderMaterial } from '@/materials'
-import { initEntity } from '@/entities'
+import { BlockShaderMaterial } from '@/world/materials'
+import { initEntity } from '@/world/entities'
 import podModel from './pod-model.fbx?url'
 import podFace from './pod-face-sdf.png?url'
 
