@@ -1,2 +1,1 @@
-export * from './authService'
-export * from './authSetup'
+export { default as authService } from './authService'

@@ -1,5 +1,5 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
-import service from './dialogueService'
+import socket from '@/socket'
 
 // state
 const message = ref({})
@@ -17,14 +17,13 @@ const toggleDialogue = () => showDialogue.value = !showDialogue.value
 
 // actions
 const continueDialogue = (index = 0) => {
-  service.choose(index)
+  socket.emit('dialogue:choose', index)
 }
 
-export const initDialogueService = async () => {
+export const initDialogue = () => {
   const onDialogueChange = (message) => {
-    if (!message) {
+    if (!message)
       return closeDialogue()
-    }
 
     if (!showDialogue.value)
       openDialogue()
@@ -32,11 +31,22 @@ export const initDialogueService = async () => {
     setMessage(message)
   }
 
-  onMounted(() => service.init(onDialogueChange))
-  onBeforeUnmount(() => service.destroy())
+  const onDialogueEnd = () => onDialogueChange(false)
+
+  onMounted(() => {
+    socket.on('dialogue:start', onDialogueChange)
+    socket.on('dialogue:next', onDialogueChange)
+    socket.on('dialogue:end', onDialogueEnd)
+  })
+
+  onBeforeUnmount(() => {
+    socket.off('dialogue:start', onDialogueChange)
+    socket.off('dialogue:next', onDialogueChange)
+    socket.off('dialogue:end', onDialogueEnd)
+  })
 }
 
-export const useDialogueService = () => ({
+export const useDialogue = () => ({
   message: getMessage,
   showDialogue: getShowDialogue,
 

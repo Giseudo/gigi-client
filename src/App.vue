@@ -1,114 +1,25 @@
 <template>
-  <Renderer ref="renderer" resize="window" >
-    <Camera :fov="80" />
-    <Scene>
-      <RouterView />
-    </Scene>
-     <EffectComposer>
-      <RenderPass />
-      <FXAAPass />
-    </EffectComposer>
-  </Renderer>
-
-  <GDialogue ref="dialogue"
-    v-if="showDialogue"
-    :text="message.text"
-    :choices="message.choices"
-    :speaker="message.speaker"
-    @continue="onDialogueContinue"
-    @prompt="onDialogueReply"
-  />
+  <World />
+  <UI />
 </template>
 
 <script>
-import { defineComponent, ref, watch, onMounted, onBeforeUnmount } from 'vue'
-import { GDialogue, GTextDialog } from '@/components'
-import { useAuthService } from '@/services'
-import { initGame, initWindow, initNavigator, initInput, useInput, useSocket } from '@/store'
-import { initDialogueService, useDialogueService } from '@/services/dialogue'
+import { defineComponent } from 'vue'
+import { initWindow, initInput } from '@/store'
+import { World } from './world'
+import { UI } from './ui'
 
 export default defineComponent({
   name: 'App',
 
   components: {
-    GDialogue,
-    GTextDialog
+    World,
+    UI
   },
 
   setup () {
-    const { renderer } = initGame()
-    const { message, showDialogue, continueDialogue } = useDialogueService()
-    const { axis, buttonDown } = useInput()
-    const { socket } = useSocket()
-    const { login, token } = useAuthService()
-    const dialogue = ref(null)
-    const questionIdentifier = ref(null)
-    const showTextDialog = ref(false) // deprecated, merge with GDialogue
-
     initWindow()
-    initNavigator()
     initInput()
-    initDialogueService()
-
-    onMounted(() => {
-      // Show camera's children on scene
-      renderer.value.scene.add(renderer.value.camera)
-
-      socket.value.on('dialogue:prompt', onDialoguePrompt)
-    })
-
-    onBeforeUnmount(() => {
-      socket.value.off('dialogue:prompt', onDialoguePrompt)
-    })
-
-    buttonDown(({ button }) => {
-      if (button === 'confirm') {
-        dialogue.value?.confirm()
-      }
-    })
-
-    watch(axis.value, (value) => {
-      const { y } = value
-
-      if (y > 0) dialogue.value?.selectPrevious()
-      if (y < 0) dialogue.value?.selectNext()
-    })
-
-    const onDialogueContinue = continueDialogue
-
-    const onDialoguePrompt = (identifier, type) => {
-      dialogue.value?.prompt(type)
-
-      questionIdentifier.value = identifier
-    }
-
-    const onDialogueReply = async (value) => {
-      if (questionIdentifier.value === 'request-access-code') {
-        showTextDialog.value = false
-
-        await login(value)
-
-        socket.value.auth.token = token.value
-        socket.value.disconnect().connect()
-
-        dialogue.value?.confirm()
-      }
-    }
-
-    socket.value.on('session', (value) => {
-      socket.value.io.opts.query.sessionId = value
-    })
-
-    return {
-      dialogue,
-      axis,
-      renderer,
-      message,
-      showDialogue,
-      showTextDialog,
-      onDialogueContinue,
-      onDialogueReply
-    }
   }
 })
 </script>

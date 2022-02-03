@@ -1,1 +1,3 @@
-export * from './socket'
+import socket from './socket'
+
+export default socket

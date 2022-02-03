@@ -1,17 +1,19 @@
-import { useAuthService } from '@/services/auth'
-
 export default {
+  token: localStorage.getItem('token'),
+
   baseUrl: `${import.meta.env.VITE_SERVER_URL}/api`,
 
   headers: {
     'Content-Type': 'application/json'
   },
 
-  async request (url, method, headers = {}, data) {
-    const { token } = useAuthService()
+  setToken (value) {
+    this.token = value
+  },
 
-    if (token)
-      headers['Authorization'] = `Bearer ${token.value}`
+  async request (url, method, headers = {}, data) {
+    if (this.token)
+      headers['Authorization'] = `Bearer ${this.token}`
 
     const options = {
       method,

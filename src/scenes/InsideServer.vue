@@ -24,8 +24,8 @@ import { useGatewayService } from '@/services'
 import { Gateway } from '@/entities/Gateway'
 import { Pod } from '@/entities/Pod'
 import { SkyboxMaterial } from '@/materials'
-import { useSocket } from '@/store'
 import { useRouter } from 'vue-router'
+import socket from '@/socket'
 import anime from 'animejs'
 
 export default defineComponent({
@@ -42,8 +42,7 @@ export default defineComponent({
     const { fetchServices, selectPort, services, activePort } = useGatewayService()
     const { isMobile } = useWindow()
     const { pointerDown, pointerUp, pointerMove } = usePointer()
-    const { socket } = useSocket()
-    const { router } = useRouter()
+    const router = useRouter()
     const pod = ref(null)
     const gatewayPosition = new Vector3()
     const displacement = ref(0)
@@ -148,15 +147,15 @@ export default defineComponent({
     const onPodClick = () => {
       let port = activePort.value
 
-      socket.value.emit('pod:interact')
+      socket.emit('pod:interact')
 
-      socket.value.once('dialogue:start', () => {
+      socket.once('dialogue:start', () => {
         pod.value.moveTo({ y: 0 })
 
         selectPort(null)
       })
 
-      socket.value.once('dialogue:end', async () => {
+      socket.once('dialogue:end', async () => {
         pod.value.moveTo({ y: -.45 })
 
         if (!services.value.length) {
