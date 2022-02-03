@@ -92,7 +92,7 @@ export default defineComponent({
     })
 
     pointerMove(({ movementX }) => {
-      if (!isMobile) return
+      if (!isMobile.value) return
 
       touchDelta.value -= movementX * deltaTime.value
 
