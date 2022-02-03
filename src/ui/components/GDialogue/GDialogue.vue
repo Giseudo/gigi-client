@@ -52,12 +52,21 @@
 <script>
 import { defineComponent } from 'vue'
 import { typewrite } from '@/directives/typewrite'
+import { useWindow } from '@/store'
 import anime from 'animejs'
 
 export default defineComponent({
   emits: [ 'continue' ],
 
   directives: { typewrite },
+
+  setup () {
+    const { isMobile } = useWindow()
+
+    return {
+      isMobile
+    }
+  },
 
   computed: {
     showUnderscore () {
@@ -108,8 +117,9 @@ export default defineComponent({
       const choice = choices[index]
 
       if (!choice) return
+      console.log(this.isMobile)
 
-      const height = 44
+      const height = this.isMobile ? 38 : 44
       const rectA = choice.getBoundingClientRect()
       const rectB = choice.parentNode.getBoundingClientRect()
       const offset = (rectA.top - rectB.top) + (height / 2)
@@ -139,6 +149,7 @@ export default defineComponent({
     showPrompt: false,
     showChoices: false,
     promptText: '',
+    promptType: '',
   }),
 
   methods: {
@@ -168,15 +179,17 @@ export default defineComponent({
     onPromptOpen (el, done) {
       const input = el.querySelector('input')
 
-      input.focus()
-
-      done()
+      setTimeout(() => {
+        input.focus()
+        done()
+      }, 400)
     },
 
     onPromptSubmit () {
       this.$emit('prompt', this.promptText)
 
       this.promptText = ''
+      this.promptType = null
       this.showPrompt = false
     },
 
@@ -186,14 +199,15 @@ export default defineComponent({
 
       if (!this.showChoices && this.choices.length > 1)
         return this.showChoices = true
+      
+      if (!this.showPrompt && this.promptType)
+        return this.showPrompt = true
 
       this.choose()
     },
 
     prompt (type) {
-      if (type === 'text') {
-        setTimeout(() => this.showPrompt = true, 400)
-      }
+      this.promptType = type
     },
 
     choose (index) {
@@ -432,7 +446,9 @@ export default defineComponent({
   }
 
   &--selected {
-    &:before { width: 75%; }
+    outline: 4px solid orange;
+
+    // &:before { width: 75%; }
   }
 
   @include responsive(desktop) {
@@ -458,6 +474,9 @@ export default defineComponent({
     font-size: 13px;
     margin-right: 10px;
     width: 100%;
+    &:focus {
+      outline: 4px solid orange;
+    }
   }
 
   &__confirm {
@@ -473,6 +492,9 @@ export default defineComponent({
     text-indent: 5px;
     background: rgba(black, .5);
     color: white;
+    &:focus {
+      outline: 4px solid orange;
+    }
   }
 
   @include responsive(desktop) {
@@ -495,8 +517,8 @@ export default defineComponent({
 .g-dialogue-cursor {
   width: 8px;
   height: 8px;
-  border-right: 3px solid white;
-  border-bottom: 3px solid white;
+  border-right: 3px solid orange;
+  border-bottom: 3px solid orange;
   transform: rotateZ(-45deg);
   transform-origin: 0% 0%;
 
@@ -507,7 +529,7 @@ export default defineComponent({
     height: 4px;
     top: 50%;
     left: 50%;
-    background: white;
+    background: orange;
     transform: translate(-4px, -4px);
   }
 }
