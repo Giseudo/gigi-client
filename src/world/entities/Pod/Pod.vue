@@ -34,7 +34,7 @@ export default defineComponent({
     update(time => {
       const t = (Math.cos(time) + 1) / 2
 
-      positionOffset.y = t * .005
+      positionOffset.y = t * .001
       lookAtOffset.y = t * .15
     })
 
