@@ -1,6 +1,6 @@
 <template>
   <div class="ui">
-    <dialogue class="ui__dialogue" perspective />
+    <dialogue class="ui__dialogue" />
   </div>
 </template>
 
