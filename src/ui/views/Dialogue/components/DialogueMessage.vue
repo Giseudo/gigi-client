@@ -1,11 +1,11 @@
 <template>
   <div class="dialogue-message" :class="classes" @click="onMessageClick">
-    <span class="dialogue-text dialogue-text--subhead">
+    <g-text type="subheading">
       {{ message.speaker }}:
-    </span>
+    </g-text>
 
-    <span v-typewrite="{ text: message.text, skip, complete: onTypewriteEnd }"
-      class="dialogue-text dialogue-text--body"
+    <g-text v-typewrite="typewrite"
+      type="body"
     />
   </div>
 </template>
@@ -20,6 +20,8 @@ export default defineComponent({
 
   directives: { typewrite },
 
+  emits: [ 'confirm', 'typewrite' ],
+
   setup (_, { emit }) {
     const { message } = useDialogue()
     const { buttonDown } = useInput()
@@ -27,22 +29,20 @@ export default defineComponent({
     const showPrompt = inject('dialogue/showPrompt')
     const isTyping = ref(true)
     const skip = ref(false)
+
     const classes = computed(() => ({
       'dialogue-message--underscore': showUnderscore.value,
+    }))
+
+    const typewrite = computed(() => ({
+      text: message.value.text,
+      skip: skip.value,
+      complete: onTypewriteEnd
     }))
 
     const showUnderscore = computed(() => 
       !showChoices.value && !showPrompt.value
     )
-
-    const confirm = () => {
-      if (showPrompt.value) return
-
-      if (isTyping.value)
-        return skip.value = true
-
-      emit('confirm')
-    }
 
     buttonDown(({ button }) => {
       if (button === 'confirm')
@@ -53,6 +53,15 @@ export default defineComponent({
       skip.value = false
       isTyping.value = true
     })
+
+    const confirm = () => {
+      if (showPrompt.value) return
+
+      if (isTyping.value)
+        return skip.value = true
+
+      emit('confirm')
+    }
 
     const onMessageClick = () => confirm()
 
@@ -66,9 +75,9 @@ export default defineComponent({
     return {
       skip,
       message,
+      typewrite,
       classes,
       onMessageClick,
-      onTypewriteEnd
     }
   }
 })

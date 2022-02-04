@@ -1,9 +1,7 @@
 <template>
   <transition name="choices" mode="out-in">
     <div v-if="showChoices" class="dialogue-choices" :class="classes">
-      <span ref="cursor" class="dialogue-choices__cursor" />
-
-      <button v-for="(choice, index) in choices"
+      <g-button v-for="(choice, index) in choices"
         ref="buttons"
         class="dialogue-choices__choice"
         :key="index"
@@ -12,10 +10,8 @@
         @mouseenter="onSelect(index)"
         @focus="onSelect(index)"
       >
-        <span class="dialogue-text dialogue-text--choice">
-          {{ choice }}
-        </span>
-      </button>
+        {{ choice }}
+      </g-button>
     </div>
   </transition>
 </template>
@@ -71,6 +67,7 @@ export default defineComponent({
 
     const onClick = (index) => {
       select(index)
+
       choose()
     }
     
@@ -90,23 +87,20 @@ export default defineComponent({
     }
   },
 
-  watch: {
+  /* watch: {
     activeChoice (index) {
       if (this.hasChosen) return
 
       const { buttons, cursor } = this.$refs
-      const el = buttons[index]
+      const button = buttons[index]
 
-      if (!el) return
+      if (!button) return
 
+      const el = button.$el
       const height = this.isMobile ? 38 : 44
       const rectA = el.getBoundingClientRect()
       const rectB = el.parentNode.getBoundingClientRect()
       const offset = (rectA.top - rectB.top) + (height / 2)
-      const selectedClass = 'dialogue-choice--selected'
-
-      buttons.forEach(choice => choice.classList.remove(selectedClass))
-      el.classList.add(selectedClass)
 
       anime({
         targets: cursor,
@@ -115,7 +109,7 @@ export default defineComponent({
         easing: 'easeOutQuad'
       })
     }
-  },
+  }, */
 })
 </script>
 
@@ -125,60 +119,38 @@ export default defineComponent({
   flex-flow: column;
   position: relative;
 
-  &__cursor {
-    width: 8px;
-    height: 8px;
-    border-right: 4px solid orange;
-    border-bottom: 4px solid orange;
-    transform: rotateZ(-45deg);
-    transform-origin: 0% 0%;
-
-    position: absolute;
-    top: 22px;
-    left: -30px;
-    transition: left .2s ease;
-    animation-name: cursor;
-    animation-duration: 1s;
-    animation-iteration-count: infinite;
-  }
-
   &__choice {
-    position: relative;
     margin-bottom: 10px;
-    padding: 10px 15px;
-    background-color: rgba(black, .5);
-    border: 0;
-    text-align: left;
-    cursor: pointer;
-    transition: opacity .2s ease, transform .2s ease;
-    -webkit-tap-highlight-color: rgba(white, .0);
 
     &--selected {
       outline: 4px solid orange;
-    }
-
-    @include responsive(desktop) {
-      margin-bottom: 20px;
-      padding: 10px 20px;
+      &:before {
+        content: "";
+        position: absolute;
+        top: 22px;
+        left: -30px;
+        transition: left .2s ease;
+        animation-name: cursor;
+        animation-duration: 1s;
+        animation-iteration-count: infinite;
+        width: 8px;
+        height: 8px;
+        border-right: 4px solid orange;
+        border-bottom: 4px solid orange;
+        transform: rotateZ(-45deg);
+        transform-origin: 0% 0%;
+      }
     }
   }
 
   &--has-chosen {
     .dialogue-choices {
       &__choice {
-        &:not(&--selected) {
-          opacity: 0;
-        }
-
-        &--selected {
-          opacity: 1;
-          transform: scale(1.1)
-        }
+        &:not(&--selected) { opacity: 0; }
+        &--selected { opacity: 1; transform: scale(1.1) }
       }
 
-      &__cursor {
-        left: -50px;
-      }
+      &__cursor { left: -50px; }
     }
   }
 

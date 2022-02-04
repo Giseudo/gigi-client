@@ -7,14 +7,12 @@
 <script>
 import { defineComponent } from 'vue'
 import { initDialogue } from '@/store'
-import { GDialogue } from '@/ui/components'
 import Dialogue from './views/Dialogue/Dialogue.vue'
 
 export default defineComponent({
   name: 'UI',
 
   components: {
-    GDialogue,
     Dialogue
   },
 

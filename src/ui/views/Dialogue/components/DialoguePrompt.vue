@@ -1,17 +1,16 @@
 <template>
   <transition name="prompt">
     <form v-if="showPrompt" class="dialogue-prompt" @submit.stop.prevent="onSubmit">
-      <input
-        ref="input"
+      <input ref="input"
         type="text"
         class="dialogue-prompt__input dialogue-prompt__input--text"
         placeholder="Type here"
         v-model="text"
       />
 
-      <button class="dialogue-prompt__confirm">
-        OK
-      </button>
+      <g-button class="dialogue-prompt__confirm">
+        Ok
+      </g-button>
     </form>
   </transition>
 </template>
@@ -21,6 +20,10 @@ import { defineComponent, ref, watch, onMounted, onBeforeUnmount, inject } from 
 import socket from '@/socket'
 
 export default defineComponent({
+  name: 'DialoguePrompt',
+
+  emits: [ 'start', 'confirm' ],
+
   setup (_, { emit }) {
     const text = ref('')
     const input = ref(null)
@@ -93,17 +96,18 @@ export default defineComponent({
     flex-shrink: 0;
     padding: 0;
     border: 0;
-    text-transform: uppercase;
-    font-family: 'Source Code Variable';
-    font-weight: 800;
-    font-size: 18px;
-    letter-spacing: 5px;
-    text-indent: 5px;
-    background: rgba(black, .5);
-    color: white;
-    &:focus {
-      outline: 4px solid orange;
+    text-align: center;
+
+    .g-text {
+      text-transform: uppercase;
+      font-family: 'Source Code Variable';
+      font-weight: 800;
+      font-size: 18px;
+      letter-spacing: 5px;
+      text-indent: 5px;
     }
+
+    &:focus { outline: 4px solid orange; }
   }
 
   @include responsive(desktop) {

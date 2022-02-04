@@ -47,6 +47,7 @@ export default defineComponent({
     provide('dialogue/activeChoice', activeChoice)
     provide('dialogue/showChoices', showChoices)
     provide('dialogue/showPrompt', showPrompt)
+    provide('theme', 'dark')
 
     const onMessageConfirm = () => {
       if (startPrompt.value)
@@ -136,47 +137,6 @@ export default defineComponent({
   .choices-leave-to {
     opacity: 0;
     transform: translateX(-20px);
-  }
-}
-
-.dialogue-text {
-  color: white;
-  font-family: 'Source Code Variable';
-
-  &--body {
-    font-size: 12px;
-    font-weight: 400;
-    line-height: 24px;
-    letter-spacing: 1px;
-  }
-
-  &--choice {
-    font-size: 12px;
-    font-weight: 600;
-    line-height: 18px;
-    letter-spacing: 1px;
-  }
-
-  &--subhead {
-    display: block;
-    font-size: 14px;
-    font-weight: 800;
-    line-height: 24px;
-    letter-spacing: 1px;
-    margin-bottom: 10px;
-  }
-
-  @include responsive(desktop) {
-    &--body {
-      font-size: 14px;
-    }
-    &--choice {
-      font-size: 14px;
-    line-height: 24px;
-    }
-    &--subhead {
-      font-size: 16px;
-    }
   }
 }
 </style>
