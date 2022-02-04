@@ -13,7 +13,6 @@ const getShowDialogue = computed(() => showDialogue.value)
 const setMessage = value => message.value = value
 const openDialogue = () => showDialogue.value = true
 const closeDialogue = () => showDialogue.value = false
-const toggleDialogue = () => showDialogue.value = !showDialogue.value
 
 // actions
 const continueDialogue = (index = 0) => {
@@ -49,10 +48,9 @@ export const initDialogue = () => {
 export const useDialogue = () => ({
   message: getMessage,
   showDialogue: getShowDialogue,
+  choices: computed(() => message.value.choices || []),
 
   openDialogue,
   closeDialogue,
-  toggleDialogue,
-
   continueDialogue,
 })

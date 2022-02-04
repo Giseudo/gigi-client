@@ -1,20 +1,21 @@
 <template>
-  <div class="g-dialogue" :class="classes">
-    <div class="g-dialogue__container">
+  <div class="dialogue" v-if="showDialogue" :class="classes">
+    <div class="dialogue__container">
       <transition name="choices" mode="out-in">
-        <div class="g-dialogue__choices" v-if="showChoices">
-          <span ref="cursor" class="g-dialogue-cursor" />
+        <div class="dialogue__choices" v-if="showChoices">
+          <span ref="cursor" class="dialogue-cursor" />
 
-          <button ref="choices"
+          <button 
+            :ref="el => { if (el) choicesEl[index] = el }"
             v-for="(choice, index) in choices"
-            class="g-dialogue-choice"
-            :class="{ 'g-dialogue-choice--selected': index === activeChoice }"
+            class="dialogue-choice"
+            :class="{ 'dialogue-choice--selected': index === activeChoice }"
             :key="index"
             @click="onOptionClick(index)"
             @mouseenter="onOptionSelect(index)"
             @focus="onOptionSelect(index)"
           >
-            <span class="g-dialogue-text g-dialogue-text--choice">
+            <span class="dialogue-text dialogue-text--choice">
               {{ choice }}
             </span>
           </button>
@@ -22,27 +23,27 @@
       </transition>
 
       <transition name="prompt" @enter="onPromptOpen">
-        <form class="g-dialogue-prompt" v-if="showPrompt" @submit.prevent="onPromptSubmit">
+        <form class="dialogue-prompt" v-if="showPrompt" @submit.prevent="onPromptSubmit">
           <input
             type="text"
-            class="g-dialogue-prompt__input g-dialogue-prompt__input--text"
+            class="dialogue-prompt__input dialogue-prompt__input--text"
             placeholder="Type here"
             v-model="promptText"
           />
 
-          <button class="g-dialogue-prompt__confirm">
+          <button class="dialogue-prompt__confirm">
             OK
           </button>
         </form>
       </transition>
 
-      <div class="g-dialogue__message" @click="onMessageClick">
-        <span class="g-dialogue-text g-dialogue-text--subhead">
-          {{ speaker }}:
+      <div class="dialogue__message" @click="onMessageClick">
+        <span class="dialogue-text dialogue-text--subhead">
+          {{ message.speaker }}:
         </span>
 
-        <span v-typewrite="{ text, skip, complete: onTypewriteEnd }"
-          class="g-dialogue-text g-dialogue-text--body"
+        <span v-typewrite="{ text: message.text, skip, complete: onTypewriteEnd }"
+          class="dialogue-text dialogue-text--body"
         />
       </div>
     </div>
@@ -50,54 +51,210 @@
 </template>
 
 <script>
-import { defineComponent } from 'vue'
+import { defineComponent, ref, reactive, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { typewrite } from '@/directives/typewrite'
-import { useWindow } from '@/store'
+import { useWindow, useDialogue, useInput, useAuth } from '@/store'
+import socket from '@/socket'
 import anime from 'animejs'
 
 export default defineComponent({
-  emits: [ 'continue' ],
-
   directives: { typewrite },
 
-  setup () {
+  setup (props) {
     const { isMobile } = useWindow()
+    const { message, choices, showDialogue, continueDialogue } = useDialogue()
+    const { axis, buttonDown } = useInput()
+    const { login } = useAuth()
+
+    const cursor = ref(null)
+    const choicesEl = reactive([])
+    const isTyping = ref(false)
+    const skip = ref(false)
+    const showChoices = ref(false)
+    const showPrompt = ref(false)
+    const promptType = ref(null)
+    const promptText = ref('')
+    const activeChoice = ref(0)
+    const questionIdentifier = ref(null)
+
+    const showUnderscore = computed(() => !showChoices.value && !showPrompt.value)
+    const classes = computed(() => ({
+      'dialogue--show-underscore': showUnderscore.value,
+      'dialogue--show-choices': showChoices.value,
+      'dialogue--perspective': props.perspective,
+    }))
+
+    onMounted(() =>
+      socket.on('dialogue:prompt', onDialoguePrompt)
+    )
+
+    onBeforeUnmount(() =>
+      socket.off('dialogue:prompt', onDialoguePrompt)
+    )
+
+    buttonDown(({ button }) => {
+      if (button === 'confirm') confirm()
+    })
+
+    watch(message, () => {
+      skip.value = false
+      isTyping.value = true
+    })
+
+    watch(activeChoice, (index) => {
+      if (!showChoices.value) return
+
+      const choice = choicesEl[index]
+
+      if (!choice) return
+
+      const height = isMobile.value ? 38 : 44
+      const rectA = choice.getBoundingClientRect()
+      const rectB = choice.parentNode.getBoundingClientRect()
+      const offset = (rectA.top - rectB.top) + (height / 2)
+      const selectedClass = 'dialogue-choice--selected'
+
+      choicesEl.forEach(choice => choice.classList.remove(selectedClass))
+      choice.classList.add(selectedClass)
+
+      anime({
+        targets: cursor.value,
+        top: `${offset}px`,
+        duration: 150,
+        easing: 'easeOutQuad'
+      })
+    })
+
+    watch(axis.value, (value) => {
+      const { y } = value
+
+      if (y > 0) selectPrevious()
+      if (y < 0) selectNext()
+    })
+
+    const select = (index) => {
+      if (index < 0) return
+      if (index > choices.value.length - 1) return
+
+      activeChoice.value = index
+    }
+
+    const selectPrevious = () => {
+      select(activeChoice.value - 1)
+    }
+
+    const selectNext = () => {
+      select(activeChoice.value + 1)
+    }
+
+    const onDialogueContinue = continueDialogue
+
+    const onDialoguePrompt = (identifier, type) => {
+      prompt(type)
+
+      questionIdentifier.value = identifier
+    }
+
+    const onDialogueReply = async (value) => {
+      const identifier = questionIdentifier.value
+
+      if (identifier === 'request-access-code')
+        await login(value)
+
+      confirm()
+    }
+
+    const onOptionClick = (index) => {
+      if (isTyping.value) return
+
+      choose(index)
+    }
+
+    const onOptionSelect = (index) => {
+      select(index)
+    }
+
+    const onMessageClick = () => {
+      if (showChoices.value) return
+      if (showPrompt.value) return
+
+      activeChoice.value = 0
+      confirm()
+    }
+
+    const onTypewriteEnd = () => {
+      isTyping.value = false
+      skip.value = false
+    }
+
+    const onPromptOpen = (el, done) => {
+      const input = el.querySelector('input')
+
+      setTimeout(() => {
+        input.focus()
+        done()
+      }, 400)
+    }
+
+    const onPromptSubmit = () => {
+      onDialogueReply()
+
+      promptText.value = ''
+      promptType.value = null
+      showPrompt.value = false
+    }
+
+    const confirm = () => {
+      if (isTyping.value)
+        return skip.value = true
+
+      if (!showChoices.value && choices.value.length > 1)
+        return showChoices.value = true
+      
+      if (!showPrompt.value && promptType.value)
+        return showPrompt.value = true
+
+      choose()
+    }
+
+    const prompt = (type) => {
+      promptType.value = type
+    }
+
+    const choose = (index) => {
+      if (showPrompt.value) return
+
+      setTimeout(() => activeChoice.value = 0, 400)
+
+      showChoices.value = false
+      continueDialogue(index ?? activeChoice.value)
+    }
 
     return {
-      isMobile
-    }
-  },
-
-  computed: {
-    showUnderscore () {
-      return !this.showChoices && !this.showPrompt
-    },
-
-    classes () {
-      return {
-        'g-dialogue--show-underscore': this.showUnderscore,
-        'g-dialogue--show-choices': this.showChoices,
-        'g-dialogue--perspective': this.perspective,
-      }
+      isMobile,
+      choices,
+      skip,
+      cursor,
+      classes,
+      showUnderscore,
+      choicesEl,
+      activeChoice,
+      showChoices,
+      showDialogue,
+      showPrompt,
+      promptText,
+      message,
+      onDialogueContinue,
+      onOptionSelect,
+      onOptionClick,
+      onPromptOpen,
+      onPromptSubmit,
+      onTypewriteEnd,
+      onMessageClick
     }
   },
 
   props: {
-    speaker: {
-      type: String,
-      default: 'undefined'
-    },
-
-    text: {
-      type: String,
-      default: 'Amet incidunt ex nesciunt rerum esse quibusdam? Laudantium accusamus dolorum quasi officia temporibus.'
-    },
-
-    choices: {
-      type: Array,
-      default: () => ([])
-    },
-
     speed: {
       type: Number,
       default: 50
@@ -108,138 +265,11 @@ export default defineComponent({
       default: false
     },
   },
-
-  watch: {
-    activeChoice (index) {
-      if (!this.showChoices) return
-
-      const { cursor, choices } = this.$refs
-      const choice = choices[index]
-
-      if (!choice) return
-      console.log(this.isMobile)
-
-      const height = this.isMobile ? 38 : 44
-      const rectA = choice.getBoundingClientRect()
-      const rectB = choice.parentNode.getBoundingClientRect()
-      const offset = (rectA.top - rectB.top) + (height / 2)
-      const selectedClass = 'g-dialogue-choice--selected'
-
-      choices.forEach(choice => choice.classList.remove(selectedClass))
-      choice.classList.add(selectedClass)
-
-      anime({
-        targets: cursor,
-        top: `${offset}px`,
-        duration: 150,
-        easing: 'easeOutQuad'
-      })
-    },
-
-    text () {
-      this.skip = false
-      this.isTyping = true
-    },
-  },
-
-  data: () => ({
-    activeChoice: 0,
-    isTyping: true,
-    skip: false,
-    showPrompt: false,
-    showChoices: false,
-    promptText: '',
-    promptType: '',
-  }),
-
-  methods: {
-    onOptionClick (index) {
-      if (this.isTyping) return
-
-      this.choose(index)
-    },
-
-    onOptionSelect (index) {
-      this.select(index)
-    },
-
-    onMessageClick () {
-      if (this.showChoices) return
-      if (this.showPrompt) return
-
-      this.activeChoice = 0
-      this.confirm()
-    },
-
-    onTypewriteEnd () {
-      this.isTyping = false
-      this.skip = false
-    },
-
-    onPromptOpen (el, done) {
-      const input = el.querySelector('input')
-
-      setTimeout(() => {
-        input.focus()
-        done()
-      }, 400)
-    },
-
-    onPromptSubmit () {
-      this.$emit('prompt', this.promptText)
-
-      this.promptText = ''
-      this.promptType = null
-      this.showPrompt = false
-    },
-
-    confirm () {
-      if (this.isTyping)
-        return this.skip = true
-
-      if (!this.showChoices && this.choices.length > 1)
-        return this.showChoices = true
-      
-      if (!this.showPrompt && this.promptType)
-        return this.showPrompt = true
-
-      this.choose()
-    },
-
-    prompt (type) {
-      this.promptType = type
-    },
-
-    choose (index) {
-      if (this.showPrompt) return
-
-      setTimeout(() => this.activeChoice = 0, 400)
-
-      this.showChoices = false
-
-      this.$emit('continue', index ?? this.activeChoice)
-    },
-
-    select (index) {
-      if (index < 0) return
-      if (index > this.choices.length - 1) return
-
-      this.activeChoice = index
-    },
-
-    selectPrevious () {
-      this.select(this.activeChoice - 1)
-    },
-
-    selectNext () {
-      this.select(this.activeChoice + 1)
-    },
-  }
 })
 </script>
 
 <style lang="scss">
-.g-dialogue {
+.dialogue {
   &__container {
     margin: auto;
     max-width: 600px;
@@ -256,7 +286,7 @@ export default defineComponent({
     width: 100%;
     max-width: 300px;
 
-    .g-dialogue-cursor {
+    .dialogue-cursor {
       position: absolute;
       top: 22px;
       left: -30px;
@@ -283,13 +313,13 @@ export default defineComponent({
   }
 
   &--show-choices {
-    .g-dialogue {
+    .dialogue {
       &__arrow { display: none; }
     }
   }
 
   &--show-underscore {
-    .g-dialogue {
+    .dialogue {
       &__message {
         cursor: pointer;
         &:after {
@@ -339,13 +369,13 @@ export default defineComponent({
   .choices-leave-active {
     transition: opacity .2s ease, transform .2s ease;
 
-    .g-dialogue-choice {
+    .dialogue-choice {
       transition: opacity .2s;
 
       &--selected { transition: opacity .2s .2s, transform .2s ease; }
     }
 
-    .g-dialogue-cursor {
+    .dialogue-cursor {
       transition: opacity .2s;
     }
   }
@@ -360,13 +390,13 @@ export default defineComponent({
   }
 
   .choices-leave-to {
-    .g-dialogue-choice {
+    .dialogue-choice {
       opacity: 0;
 
       &--selected { transform: scale(1.1); }
     }
 
-    .g-dialogue-cursor {
+    .dialogue-cursor {
       opacity: 0;
     }
   }
@@ -383,7 +413,7 @@ export default defineComponent({
   }
 }
 
-.g-dialogue-text {
+.dialogue-text {
   color: white;
   font-family: 'Source Code Variable';
 
@@ -424,7 +454,7 @@ export default defineComponent({
   }
 }
 
-.g-dialogue-choice {
+.dialogue-choice {
   position: relative;
   margin-bottom: 10px;
   padding: 10px 15px;
@@ -457,7 +487,7 @@ export default defineComponent({
   }
 }
 
-.g-dialogue-prompt {
+.dialogue-prompt {
   width: 100%;
   max-width: 420px;
   margin: auto 0 auto auto;
@@ -514,7 +544,7 @@ export default defineComponent({
   }
 }
 
-.g-dialogue-cursor {
+.dialogue-cursor {
   width: 8px;
   height: 8px;
   border-right: 4px solid orange;
