@@ -1,15 +1,14 @@
 <template>
   <div class="dialogue" v-if="showDialogue">
     <div class="dialogue__container">
-      <transition name="choices" mode="out-in">
-        <dialogue-choices v-if="showChoices"
-          class="dialogue__choices"
-          @choose="onChoiceChosen"
-        />
-      </transition>
+      <dialogue-choices
+        class="dialogue__choices"
+        @choose="onChoiceChosen"
+      />
 
       <dialogue-prompt
         class="dialogue__prompt"
+        @start="onPromptStart"
         @confirm="onPromptSubmit"
       />
 
@@ -43,31 +42,36 @@ export default defineComponent({
     const activeChoice = ref(0)
     const showChoices = ref(false)
     const showPrompt = ref(false)
+    const startPrompt = ref(false)
 
     provide('dialogue/activeChoice', activeChoice)
     provide('dialogue/showChoices', showChoices)
     provide('dialogue/showPrompt', showPrompt)
 
-    const onMessageConfirm = () => confirm()
+    const onMessageConfirm = () => {
+      if (startPrompt.value)
+        return showPrompt.value = true
 
-    const onChoiceChosen = () => choose()
+      if (!showChoices.value && choices.value.length > 1)
+        return showChoices.value = true
+
+      choose()
+    }
+
+    const onChoiceChosen = () => {
+      choose()
+    }
+
+    const onPromptStart = () => {
+      startPrompt.value = true
+    }
 
     const onPromptSubmit = async ({ identifier, value }) => {
       if (identifier === 'request-access-code')
         await login(value)
 
       showPrompt.value = false
-
-      choose()
-    }
-
-    const confirm = () => {
-      if (!showChoices.value && choices.value.length > 1)
-        return showChoices.value = true
-      
-      // FIXME we need to show prompt only when the message is not typing anymore
-      // if (!showPrompt.value && promptType.value)
-      // return showPrompt.value = true
+      startPrompt.value = false
 
       choose()
     }
@@ -78,7 +82,7 @@ export default defineComponent({
       continueDialogue(index ?? activeChoice.value)
 
       showChoices.value = false
-      activeChoice.value = 0
+      setTimeout(() => activeChoice.value = 0, 200)
     }
 
     return {
@@ -86,6 +90,7 @@ export default defineComponent({
       showChoices,
       showDialogue,
       message,
+      onPromptStart,
       onPromptSubmit,
       onChoiceChosen,
       onMessageConfirm

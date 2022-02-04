@@ -1,45 +1,47 @@
 <template>
-  <div class="dialogue-choices" :class="{ 'dialogue-choices--has-chosen': hasChosen }">
-    <span ref="cursor" class="dialogue-choices__cursor" />
+  <transition name="choices" mode="out-in">
+    <div v-if="showChoices" class="dialogue-choices" :class="classes">
+      <span ref="cursor" class="dialogue-choices__cursor" />
 
-    <button v-for="(choice, index) in choices"
-      ref="buttons"
-      class="dialogue-choices__choice"
-      :key="index"
-      :class="{ 'dialogue-choices__choice--selected': index === activeChoice }"
-      @click="onClick(index)"
-      @mouseenter="onSelect(index)"
-      @focus="onSelect(index)"
-    >
-      <span class="dialogue-text dialogue-text--choice">
-        {{ choice }}
-      </span>
-    </button>
-  </div>
+      <button v-for="(choice, index) in choices"
+        ref="buttons"
+        class="dialogue-choices__choice"
+        :key="index"
+        :class="{ 'dialogue-choices__choice--selected': index === activeChoice }"
+        @click="onClick(index)"
+        @mouseenter="onSelect(index)"
+        @focus="onSelect(index)"
+      >
+        <span class="dialogue-text dialogue-text--choice">
+          {{ choice }}
+        </span>
+      </button>
+    </div>
+  </transition>
 </template>
 
 <script>
-import { defineComponent, ref, inject, watch } from 'vue'
+import { defineComponent, ref, inject, watch, computed } from 'vue'
 import { useWindow, useInput, useDialogue } from '@/store'
 import anime from 'animejs'
 
 export default defineComponent({
   name: 'DialogueChoices',
 
-  emits: [ 'select', 'choose' ],
+  emits: [ 'choose' ],
 
   setup (_, { emit }) {
     const { isMobile } = useWindow()
-    const { axis, buttonDown } = useInput()
+    const { axis } = useInput()
     const { choices } = useDialogue()
     const activeChoice = inject('dialogue/activeChoice')
+    const showChoices = inject('dialogue/showChoices')
     const hasChosen = ref(false)
-
-    buttonDown(({ button }) => {
-      if (button === 'confirm') choose()
-    })
+    const classes = computed(() => ({ 'dialogue-choices--has-chosen': hasChosen.value }))
 
     watch(axis.value, (value) => {
+      if (!showChoices.value) return
+
       const { y } = value
 
       if (y > 0) selectPrevious()
@@ -79,6 +81,8 @@ export default defineComponent({
     return {
       isMobile,
       choices,
+      classes,
+      showChoices,
       activeChoice,
       hasChosen,
       onClick,

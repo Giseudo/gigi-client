@@ -17,7 +17,7 @@
 </template>
 
 <script>
-import { defineComponent, ref, onMounted, onBeforeUnmount, inject } from 'vue'
+import { defineComponent, ref, watch, onMounted, onBeforeUnmount, inject } from 'vue'
 import socket from '@/socket'
 
 export default defineComponent({
@@ -28,23 +28,30 @@ export default defineComponent({
     const showPrompt = inject('dialogue/showPrompt')
 
     onMounted(() =>
-      socket.on('dialogue:prompt', onPrompt)
+      socket.on('dialogue:prompt', onStart)
     )
 
     onBeforeUnmount(() =>
-      socket.off('dialogue:prompt', onPrompt)
+      socket.off('dialogue:prompt', onStart)
     )
 
-    const onPrompt = (identifier) => {
+    const onStart = (identifier) => {
       promptId.value = identifier
       text.value = ''
-      showPrompt.value = true
-      setTimeout(() => input.value.focus() , 400)
+
+      emit('start')
     }
+
+    watch(showPrompt, (value) => {
+      if (!value) return
+
+      setTimeout(() => input.value.focus(), 200)
+    })
 
     const onSubmit = () => {
       emit('confirm', {
-        identifier: promptId.value, value: text.value
+        identifier: promptId.value,
+        value: text.value
       })
     }
 

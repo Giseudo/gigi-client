@@ -8,7 +8,7 @@
 import { defineComponent } from 'vue'
 import { initDialogue } from '@/store'
 import { GDialogue } from '@/ui/components'
-import Dialogue from './layouts/Dialogue/Dialogue.vue'
+import Dialogue from './views/Dialogue/Dialogue.vue'
 
 export default defineComponent({
   name: 'UI',

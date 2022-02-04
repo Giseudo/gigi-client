@@ -25,18 +25,17 @@ export default defineComponent({
     const { buttonDown } = useInput()
     const showChoices = inject('dialogue/showChoices')
     const showPrompt = inject('dialogue/showPrompt')
-
     const isTyping = ref(true)
     const skip = ref(false)
     const classes = computed(() => ({
       'dialogue-message--underscore': showUnderscore.value,
     }))
 
-    const showUnderscore = computed(() => !showChoices.value && !showPrompt.value)
+    const showUnderscore = computed(() => 
+      !showChoices.value && !showPrompt.value
+    )
 
     const confirm = () => {
-      if (showChoices.value) return
-
       if (showPrompt.value) return
 
       if (isTyping.value)
@@ -60,6 +59,8 @@ export default defineComponent({
     const onTypewriteEnd = () => {
       isTyping.value = false
       skip.value = false
+
+      emit('typewrite')
     }
 
     return {
