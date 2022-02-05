@@ -1,30 +1,78 @@
 <template>
-  <alert-message :title="title">
-    {{ message }}
-  </alert-message>
+  <g-modal :opened="showAlert">
+    <div class="alert" :class="classes">
+      <g-text type="heading" class="alert__title">
+        {{ title }}
+      </g-text>
+
+      <div class="alert__body">
+        <g-text type="body">
+          {{ message }}
+        </g-text>
+      </div>
+
+      <g-button outlined
+        theme="default"
+        class="alert__confirm"
+        @click="onConfirm"
+      >
+        {{ confirmText }}
+      </g-button>
+    </div>
+  </g-modal>
 </template>
 
 <script>
-import { defineComponent, ref, provide, computed } from 'vue'
-import AlertMessage from './components/AlertMessage.vue'
+import { defineComponent, provide, computed } from 'vue'
+import { useAlert } from '@/store/alert'
 
 export default defineComponent({
   name: 'Alert',
 
-  components: {
-    AlertMessage
-  },
-
   setup () {
-    const message = ref('Ipsum facilis illum harum distinctio nostrum Nobis itaque ducimus sit iste esse Accusantium voluptatem cumque sunt officiis sapiente, nisi. Cupiditate')
-    const title = ref('Alert')
+    const { title, message, showAlert, confirmAlert, confirmText } = useAlert()
+    const theme = computed(() => 'light')
+    const classes = computed(() => ({
+      'alert--dark': theme.value === 'dark'
+    }))
 
-    provide('theme', computed(() => 'dark'))
+    const onConfirm = () => confirmAlert()
+
+    provide('theme', theme)
 
     return {
+      classes,
+      title,
       message,
-      title
+      title,
+      showAlert,
+      confirmText,
+      onConfirm,
     }
   }
 })
 </script>
+
+<style lang="scss">
+.alert {
+  width: 420px;
+  padding: 40px;
+  text-align: center;
+  background: white;
+
+  &__body {
+    display: block;
+    margin-top: 40px;
+    margin-bottom: 40px;
+  }
+  
+  &__confirm {
+    width: 100%;
+    text-align: center;
+  }
+
+  &--dark {
+    background: rgba(black, .5);
+  }
+}
+</style>

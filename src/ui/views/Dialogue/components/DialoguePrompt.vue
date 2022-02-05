@@ -94,12 +94,13 @@ export default defineComponent({
     padding: 0;
     border: 0;
     text-align: center;
+    display: flex;
 
     .g-text {
       text-transform: uppercase;
       font-family: 'Source Code Variable';
       font-weight: 800;
-      font-size: 18px;
+      font-size: 20px;
       letter-spacing: 5px;
       text-indent: 5px;
     }
@@ -116,9 +117,12 @@ export default defineComponent({
     }
     &__confirm {
       width: 120px;
-      letter-spacing: 10px;
-      text-indent: 10px;
-      font-size: 24px;
+
+      .g-text {
+        font-size: 24px;
+        letter-spacing: 10px;
+        text-indent: 10px;
+      }
     }
   }
 }

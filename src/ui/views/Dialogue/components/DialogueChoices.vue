@@ -19,7 +19,6 @@
 <script>
 import { defineComponent, ref, inject, watch, computed } from 'vue'
 import { useWindow, useInput, useDialogue } from '@/store'
-import anime from 'animejs'
 
 export default defineComponent({
   name: 'DialogueChoices',
@@ -134,7 +133,7 @@ export default defineComponent({
         content: "";
         position: absolute;
         top: 22px;
-        left: -40px;
+        left: -35px;
         transition: left .2s ease;
         animation-name: cursor;
         animation-duration: 1s;

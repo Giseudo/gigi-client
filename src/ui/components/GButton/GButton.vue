@@ -56,6 +56,9 @@ export default defineComponent({
 <style lang="scss">
 .g-button {
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 10px 15px;
   border: 0;
   text-align: left;
@@ -72,7 +75,7 @@ export default defineComponent({
   }
 
   &--outlined {
-    border: 2px solid transparent;
+    border: 4px solid transparent;
   }
 
   &--default {

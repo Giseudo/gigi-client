@@ -1,14 +1,16 @@
 <template>
-  <div class="g-modal">
-    <div class="g-modal__overlay" />
-    <div class="g-modal__body">
-      <slot></slot>
+  <transition name="modal">
+    <div v-if="opened" class="g-modal">
+      <div class="g-modal__overlay" />
+      <div class="g-modal__body">
+        <slot></slot>
+      </div>
     </div>
-  </div>
+  </transition>
 </template>
 
 <script>
-import { defineComponent, provide } from 'vue'
+import { defineComponent } from 'vue'
 
 export default defineComponent({
   name: 'GModal',
@@ -18,7 +20,10 @@ export default defineComponent({
   },
 
   props: {
-
+    opened: {
+      type: Boolean,
+      default: true
+    }
   }
 })
 </script>
@@ -49,5 +54,16 @@ export default defineComponent({
     align-items: center;
     justify-content: center;
   }
+}
+
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity .2s ease, transform .2s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+  transform: scale(1.5);
 }
 </style>

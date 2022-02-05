@@ -6,8 +6,8 @@
 </template>
 
 <script>
-import { defineComponent, provide } from 'vue'
-import { initDialogue } from '@/store'
+import { defineComponent, onMounted } from 'vue'
+import { initDialogue, useAlert } from '@/store'
 import Alert from './views/Alert/Alert.vue'
 import Dialogue from './views/Dialogue/Dialogue.vue'
 
@@ -21,6 +21,18 @@ export default defineComponent({
 
   setup () {
     initDialogue()
+
+    const { openAlert } = useAlert()
+
+    onMounted(() => {
+      setTimeout(() => openAlert({
+        title: 'Alert',
+        type: 'alert',
+        message: 'oie',
+        theme: 'warn',
+        onConfirm: (done) => setTimeout(done, 1000)
+      }), 1000)
+    })
   }
 })
 </script>
@@ -39,22 +51,6 @@ export default defineComponent({
       left: 20px;
       right: 20px;
     }
-  }
-}
-
-.alert {
-  width: 300px;
-  padding: 20px;
-  background: rgba(black, .5);
-
-  &__title {
-    text-align: center;
-  }
-  &__button {
-    width: 100%;
-    text-align: center;
-    margin-top: 20px;
-    margin-bottom: 0;
   }
 }
 </style>
