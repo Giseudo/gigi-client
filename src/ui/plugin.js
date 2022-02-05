@@ -1,8 +1,12 @@
-import { GText, GButton } from './components'
+import {
+  GButton, GInput, GModal, GText
+} from './components'
 
 export default {
   install: (app, options) => {
-    app.component('GText', GText)
     app.component('GButton', GButton)
+    app.component('GInput', GInput)
+    app.component('GModal', GModal)
+    app.component('GText', GText)
   }
 }

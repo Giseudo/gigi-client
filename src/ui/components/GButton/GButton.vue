@@ -7,7 +7,7 @@
 </template>
 
 <script>
-import { defineComponent, provide } from 'vue'
+import { defineComponent, inject, computed } from 'vue'
 
 export const BUTTON_THEMES = [
   'default', 'success', 'warn', 'error'
@@ -16,8 +16,21 @@ export const BUTTON_THEMES = [
 export default defineComponent({
   name: 'GButton',
 
-  setup () {
-    provide('theme', 'dark')
+  setup (props) {
+    const theme = inject('theme', 'light')
+
+    const classes = computed(() => ([
+      `g-button--${props.theme}`,
+      {
+        'g-button--disabled': props.disabled,
+        'g-button--dark': theme.value === 'dark',
+        'g-button--outlined': props.outlined,
+      }
+    ]))
+
+    return {
+      classes
+    }
   },
 
   props: {
@@ -30,17 +43,13 @@ export default defineComponent({
     disabled: {
       type: Boolean,
       default: false
+    },
+
+    outlined: {
+      type: Boolean,
+      default: false
     }
   },
-
-  computed: {
-    classes () {
-      return [
-        `g-button--${this.theme}`,
-        { 'g-button--disabled': this.disabled }
-      ]
-    }
-  }
 })
 </script>
 
@@ -54,25 +63,45 @@ export default defineComponent({
   transition: opacity .2s ease, transform .2s ease;
   -webkit-tap-highlight-color: rgba(white, .0);
 
+  &:focus {
+    outline: 4px solid orange;
+  }
+
   @include responsive(desktop) {
-    margin-bottom: 20px;
     padding: 10px 20px;
   }
 
+  &--outlined {
+    border: 2px solid transparent;
+  }
+
   &--default {
-    background-color: rgba(black, .5);
+    background: white;
+    border-color: black;
+
+    &.g-button--dark {
+      background: rgba(black, .5);
+      border-color: white;
+    }
   }
 
   &--success {
-
+    &.g-button--dark {
+      color: green;
+      background: rgba(green, .2);
+    }
   }
 
   &--warn {
+    background: orange;
 
+    &.g-button--dark { color: orange; }
   }
 
   &--error {
+    background: red;
 
+    &.g-button--dark { color: orange; }
   }
 }
 </style>

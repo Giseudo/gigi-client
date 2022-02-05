@@ -33,7 +33,11 @@ export default defineComponent({
     const activeChoice = inject('dialogue/activeChoice')
     const showChoices = inject('dialogue/showChoices')
     const hasChosen = ref(false)
-    const classes = computed(() => ({ 'dialogue-choices--has-chosen': hasChosen.value }))
+    const theme = inject('theme', 'light')
+    const classes = computed(() => ({
+      'dialogue-choices--has-chosen': hasChosen.value,
+      'dialogue-choices--dark': theme.value === 'dark'
+    }))
 
     watch(axis.value, (value) => {
       if (!showChoices.value) return
@@ -122,19 +126,21 @@ export default defineComponent({
   &__choice {
     margin-bottom: 10px;
 
+    @include responsive(desktop) { margin-bottom: 20px; }
+
     &--selected {
       outline: 4px solid orange;
       &:before {
         content: "";
         position: absolute;
         top: 22px;
-        left: -30px;
+        left: -40px;
         transition: left .2s ease;
         animation-name: cursor;
         animation-duration: 1s;
         animation-iteration-count: infinite;
-        width: 8px;
-        height: 8px;
+        width: 12px;
+        height: 12px;
         border-right: 4px solid orange;
         border-bottom: 4px solid orange;
         transform: rotateZ(-45deg);

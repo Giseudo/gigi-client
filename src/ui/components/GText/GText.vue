@@ -7,7 +7,7 @@
 <script>
 import { defineComponent, inject } from 'vue'
 
-const types = [
+export const TEXT_THEMES = [
   'heading', 'subheading', 'body', 'button'
 ]
 
@@ -24,19 +24,16 @@ export default defineComponent({
     type: {
       type: String,
       default: 'body',
-      validation: (value) => types.includes(value)
+      validation: (value) => TEXT_THEMES.includes(value)
     },
-
-    state: {
-      type: String,
-      default: 'success',
-      validation: (value) => states.includes(value)
-    }
   },
 
   computed: {
     classes () {
-      return [ `g-text--${this.type}`, `g-text--${this.theme}` ]
+      return [
+        `g-text--${this.type}`,
+        `g-text--${this.theme}`
+      ]
     }
   }
 })
@@ -48,6 +45,9 @@ export default defineComponent({
 
   &--heading {
     display: block;
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 30px;
 
     @include responsive(desktop) { }
   }
@@ -78,7 +78,7 @@ export default defineComponent({
 
   &--button {
     font-size: 12px;
-    font-weight: 600;
+    font-weight: 800;
     line-height: 18px;
     letter-spacing: 1px;
 

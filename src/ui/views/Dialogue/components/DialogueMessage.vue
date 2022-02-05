@@ -27,11 +27,13 @@ export default defineComponent({
     const { buttonDown } = useInput()
     const showChoices = inject('dialogue/showChoices')
     const showPrompt = inject('dialogue/showPrompt')
+    const theme = inject('theme', 'light')
     const isTyping = ref(true)
     const skip = ref(false)
 
     const classes = computed(() => ({
       'dialogue-message--underscore': showUnderscore.value,
+      'dialogue-message--dark': theme.value === 'dark'
     }))
 
     const typewrite = computed(() => ({
@@ -89,8 +91,8 @@ export default defineComponent({
   padding: 15px;
   padding-bottom: 20px;
   position: relative;
-  background-color: rgba(black, .5);
-  min-height: 100px;
+  background-color: white;
+  min-height: 180px;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
 
@@ -112,6 +114,10 @@ export default defineComponent({
       animation-iteration-count: infinite;
       animation-timing-function: steps(2, jump-none);
     }
+  }
+
+  &--dark {
+    background-color: rgba(black, .5);
   }
 }
 </style>

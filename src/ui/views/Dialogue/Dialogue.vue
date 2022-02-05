@@ -21,7 +21,7 @@
 </template>
 
 <script>
-import { defineComponent, ref, provide } from 'vue'
+import { defineComponent, ref, provide, computed } from 'vue'
 import { useWindow, useDialogue, useAuth } from '@/store'
 import DialogueChoices from './components/DialogueChoices.vue'
 import DialogueMessage from './components/DialogueMessage.vue'
@@ -47,7 +47,7 @@ export default defineComponent({
     provide('dialogue/activeChoice', activeChoice)
     provide('dialogue/showChoices', showChoices)
     provide('dialogue/showPrompt', showPrompt)
-    provide('theme', 'dark')
+    provide('theme', computed(() => 'dark'))
 
     const onMessageConfirm = () => {
       if (startPrompt.value)

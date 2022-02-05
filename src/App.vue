@@ -25,6 +25,14 @@ export default defineComponent({
 </script>
 
 <style lang="scss">
+html {
+  box-sizing: border-box;
+}
+
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
 body, html {
   margin: 0;
   height: 100%;

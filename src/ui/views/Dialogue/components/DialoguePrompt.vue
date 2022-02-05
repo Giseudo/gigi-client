@@ -1,12 +1,19 @@
 <template>
   <transition name="prompt">
     <form v-if="showPrompt" class="dialogue-prompt" @submit.stop.prevent="onSubmit">
-      <input ref="input"
+      <g-input ref="input"
+        class="dialogue-prompt__input"
+        placeholder="Type here"
+        v-model="text"
+      />
+
+      <!--input ref="input"
         type="text"
         class="dialogue-prompt__input dialogue-prompt__input--text"
         placeholder="Type here"
         v-model="text"
       />
+      -->
 
       <g-button class="dialogue-prompt__confirm">
         Ok
@@ -78,17 +85,7 @@ export default defineComponent({
 
   &__input {
     flex: 1;
-    height: 38px;
-    padding: 0 15px;
-    border: 0;
-    font-family: 'Source Code Variable';
-    font-weight: 600;
-    font-size: 13px;
     margin-right: 10px;
-    width: 100%;
-    &:focus {
-      outline: 4px solid orange;
-    }
   }
 
   &__confirm {
@@ -115,7 +112,6 @@ export default defineComponent({
 
     &__input {
       font-size: 16px;
-      padding: 0 20px;
       height: 44px;
     }
     &__confirm {
