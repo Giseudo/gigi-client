@@ -47,7 +47,7 @@ export default defineComponent({
     provide('dialogue/activeChoice', activeChoice)
     provide('dialogue/showChoices', showChoices)
     provide('dialogue/showPrompt', showPrompt)
-    provide('theme', computed(() => 'dark'))
+    provide('theme', computed(() => 'light'))
 
     const onMessageConfirm = () => {
       if (startPrompt.value)

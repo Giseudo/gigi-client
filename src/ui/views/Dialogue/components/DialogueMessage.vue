@@ -1,8 +1,10 @@
 <template>
   <div class="dialogue-message" :class="classes" @click="onMessageClick">
-    <g-text type="subheading">
-      {{ message.speaker }}:
-    </g-text>
+    <div class="dialogue-message__speaker">
+      <g-text type="subheading">
+        {{ message.speaker }}:
+      </g-text>
+    </div>
 
     <g-text v-typewrite="typewrite"
       type="body"
@@ -96,6 +98,15 @@ export default defineComponent({
   user-select: none;
   -webkit-tap-highlight-color: transparent;
 
+  &__speaker {
+    .g-text {
+      background: black;
+      color: white;
+      display: inline-block;
+      padding: 0 10px;
+    }
+  }
+
   @include responsive(desktop) {
     padding: 20px;
     padding-bottom: 40px;
@@ -118,6 +129,15 @@ export default defineComponent({
 
   &--dark {
     background-color: rgba(black, .5);
+
+    .dialogue-message {
+      &__speaker {
+        .g-text {
+          background: white;
+          color: black;
+        }
+      }
+    }
   }
 }
 </style>

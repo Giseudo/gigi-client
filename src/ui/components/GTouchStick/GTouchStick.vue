@@ -2,11 +2,16 @@
   <div class="g-touch-stick" :class="classes">
     <div
       class="g-touch-stick__background"
-      :style="{ left: `${origin.x}px`, top: `${origin.y}px` }"
+      :style="{ left: `${origin.x}px`, top: `${origin.y}px`, color: 'white' }"
     >
       <span
         class="g-touch-stick__handle"
-        :style="{ transform: `translate(${direction.x * 100 / 2}px, ${-direction.y * 100 / 2}px)` }"
+        :style="{
+          transform: `translate(
+            ${direction.x * 100 / 2}px,
+            ${-direction.y * 100 / 2}px
+          )`
+        }"
       />
     </div>
 
@@ -19,24 +24,50 @@
 </template>
 
 <script>
+import { ref, computed } from 'vue'
 import { usePointer } from '@/store'
 import { Vector2 } from 'three'
 
 export default {
   name: 'GTouchStick',
 
-  data: () => ({
-    isDragging: false,
-    direction: new Vector2(),
-    origin: new Vector2(),
-    touch: new Vector2()
-  }),
+  setup (_, { emit }) {
+    const { pointerDown, pointerMove, pointerUp } = usePointer()
+    const isDragging = ref(false)
+    const origin = new Vector2()
+    const direction = new Vector2()
+    const touch = ref(new Vector2())
 
-  setup () {
-    const { subscribe, unsubscribe } = usePointer()
+    pointerDown((event) => {
+      origin.set(event.pageX, event.pageY)
+      touch.value.copy(origin)
+      isDragging.value = true
+    })
+
+    pointerMove((event) => {
+      if (!isDragging.value) return
+
+      touch.value.set(event.pageX, event.pageY)
+
+      const { x, y } = origin.clone().sub(touch.value).normalize()
+
+      direction.set(-x, y)
+
+      emit('move', direction)
+    })
+
+    pointerUp(() => {
+      direction.set(0, 0)
+      isDragging.value = false
+
+      emit('move', direction)
+    })
 
     return {
-      subscribe, unsubscribe
+      isDragging,
+      origin,
+      touch,
+      direction
     }
   },
 
@@ -48,42 +79,7 @@ export default {
     }
   },
 
-  mounted () {
-    this.subscribe('pointer-down', this.onTouchStart)
-    this.subscribe('pointer-move', this.onTouchMove)
-    this.subscribe('pointer-up', this.onTouchEnd)
-  },
-
-  unmounted () {
-    this.unsubscribe('pointer-down', this.onTouchStart)
-    this.unsubscribe('pointer-move', this.onTouchMove)
-    this.unsubscribe('pointer-up', this.onTouchEnd)
-  },
-
   methods: {
-    onTouchStart ({ message: event }) {
-      this.origin.set(event.pageX, event.pageY)
-      this.touch.copy(this.origin)
-      this.isDragging = true
-    },
-
-    onTouchMove ({ message: event }) {
-      if (!this.isDragging) return
-
-      this.touch.set(event.pageX, event.pageY)
-
-      this.direction = this.origin.clone().sub(this.touch).normalize()
-      this.direction.x *= -1
-
-      this.$emit('move', this.direction)
-    },
-
-    onTouchEnd () {
-      this.direction.set(0, 0)
-      this.isDragging = false
-      this.$emit('move', this.direction)
-    }
-
     /*
     // TODO Where this belongs?
     getOrientedAxis (direction) {

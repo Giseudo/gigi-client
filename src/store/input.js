@@ -11,11 +11,15 @@ const CONFIRM_KEYS = [ ' ', 'Enter' ]
 const axis = ref(new Vector2())
 const pressedKeys = ref([])
 const dispatcher = new EventDispatcher()
+const gameplayInput = ref(false)
 
 const setPrimaryAxis = (direction) => {
   axis.value.x = direction.x
   axis.value.y = direction.y
 }
+
+const enableGameplayInput = () => gameplayInput.value = true
+const disableGameplayInput = () => gameplayInput.value = false
 
 const onKeydown = event => {
   const { key } = event
@@ -81,6 +85,9 @@ const buttonDown = (callback) => {
 
 export const useInput = () => ({
   axis: computed(() => axis.value),
+  gameplayInput: computed(() => gameplayInput.value),
+  enableGameplayInput,
+  disableGameplayInput,
   setPrimaryAxis,
   buttonDown,
 })

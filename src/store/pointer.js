@@ -1,5 +1,7 @@
 import { onMounted, onBeforeUnmount } from 'vue'
 
+// this is not a store.. maybe move this to the composables folder?
+
 const setCursor = (value) => {
   const body = document.querySelector('body')
 

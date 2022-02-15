@@ -12,6 +12,7 @@
     "animejs": "^3.2.1",
     "socket.io-client": "^4.4.1",
     "three": "0.134",
+    "three-pathfinding": "^1.1.0",
     "troisjs": "^0.3.3",
     "vue": "^3.0.0",
     "vue-router": "^4.0.0-0",

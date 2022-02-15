@@ -2,14 +2,16 @@
   <div class="ui">
     <alert class="ui__alert" />
     <dialogue class="ui__dialogue" />
+    <touch-stick v-if="gameplayInput" class="ui__touch-stick" />
   </div>
 </template>
 
 <script>
-import { defineComponent, onMounted } from 'vue'
-import { initDialogue, useAlert } from '@/store'
+import { defineComponent } from 'vue'
+import { useInput } from '@/store'
 import Alert from './views/Alert/Alert.vue'
 import Dialogue from './views/Dialogue/Dialogue.vue'
+import TouchStick from './views/TouchStick/TouchStick.vue'
 
 export default defineComponent({
   name: 'UI',
@@ -17,22 +19,13 @@ export default defineComponent({
   components: {
     Alert,
     Dialogue,
+    TouchStick,
   },
 
   setup () {
-    initDialogue()
+    const { gameplayInput } = useInput()
 
-    const { openAlert } = useAlert()
-
-    onMounted(() => {
-      setTimeout(() => openAlert({
-        title: 'Alert',
-        type: 'alert',
-        message: 'oie',
-        theme: 'warn',
-        onConfirm: (done) => setTimeout(done, 1000)
-      }), 1000)
-    })
+    return { gameplayInput }
   }
 })
 </script>

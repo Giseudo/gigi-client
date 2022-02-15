@@ -65,7 +65,21 @@ export default defineComponent({
     background: transparent;
 
     &:focus {
-      outline: 4px solid orange;
+      outline-width: 4px;
+      outline-style: solid;
+      outline-offset: 2px;
+      animation-name: selected-outline;
+      animation-duration: 1s;
+      animation-iteration-count: infinite;
+    }
+
+    &::placeholder {
+      font-size: 14px;
+      font-weight: 800;
+      line-height: 18px;
+      letter-spacing: 3px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
     }
   }
 

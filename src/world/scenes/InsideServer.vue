@@ -19,7 +19,7 @@
 <script>
 import { defineComponent, ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { Vector3 } from 'three'
-import { useGame, usePointer, useWindow } from '@/store'
+import { useGame, usePointer, useWindow, useDialogue, useAlert } from '@/store'
 import { useGatewayService } from '@/services'
 import { Gateway } from '@/world/entities/Gateway'
 import { Pod } from '@/world/entities/Pod'
@@ -30,6 +30,10 @@ import anime from 'animejs'
 
 export default defineComponent({
   name: 'InsideServer',
+
+  beforeRouteLeave () {
+    this.closeDialogue()
+  },
 
   components: {
     Gateway,
@@ -42,6 +46,8 @@ export default defineComponent({
     const { fetchServices, selectPort, services, activePort } = useGatewayService()
     const { isMobile } = useWindow()
     const { pointerDown, pointerUp, pointerMove } = usePointer()
+    const { closeDialogue } = useDialogue()
+    const { openAlert } = useAlert()
     const router = useRouter()
     const pod = ref(null)
     const gatewayPosition = new Vector3()
@@ -49,7 +55,7 @@ export default defineComponent({
     const touchDelta = ref(0)
     const isDragging = ref(false)
     const isAnimating = ref(false)
-    const showGateway = ref(false)
+    const showGateway = computed(() => services.value.length > 0)
 
     onMounted(async () => {
       camera.value.attach(pod.value.transform)
@@ -61,12 +67,10 @@ export default defineComponent({
         easing: 'easeOutQuad',
       })
 
-      pod.value.moveTo({ y: -.4, z: -.75 })
+      pod.value.moveTo({ y: -.5, z: -.75 })
       pod.value.lookAt(camera.value)
 
       if (services.value.length) {
-        showGateway.value = true
-
         const [ first ] = services.value
 
         selectPort(first?.port)
@@ -156,7 +160,7 @@ export default defineComponent({
       })
 
       socket.once('dialogue:end', async () => {
-        pod.value.moveTo({ y: -.45 })
+        pod.value.moveTo({ y: -.5 })
 
         if (!services.value.length) {
           await fetchServices()
@@ -166,15 +170,25 @@ export default defineComponent({
           port = first?.port
         }
 
-        showGateway.value = true
         selectPort(port)
       })
     }
 
     const onAccessService = (service) => {
-      console.log('accessed service on port', service.port)
+      openAlert({
+        title: `REGISTRY SERVICE`,
+        message: '',
+        dark: false,
+        cancel: true,
+        confirmText: 'Access',
+        onConfirm: (done) => {
+          router.push({
+            name: service.port === 5000 ? 'APIGateway' : 'Playground'
+          }) 
 
-      router.push({ name: 'Playground' })
+          done()
+        }
+      })
     }
 
     return {
@@ -182,6 +196,7 @@ export default defineComponent({
       gatewayPosition,
       services,
       showGateway,
+      closeDialogue,
       onPodClick,
       onAccessService
     }

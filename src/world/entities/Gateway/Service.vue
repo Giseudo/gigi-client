@@ -103,7 +103,6 @@ export default defineComponent({
 
       this.direction = this.transform.group.getWorldDirection(forward)
 
-      this.animate()
     },
 
     animate () {
