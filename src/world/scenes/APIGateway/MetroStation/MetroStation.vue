@@ -88,14 +88,15 @@ export default defineComponent({
       if (isInside.value) return
 
       if (gate.direction === 'in') {
-        socket.emit('api-gateway:interact', 'gate-in')
+        socket.emit('interact', 'metro-gate-in')
+
         socket.once('api-gateway:open-gate', () => {
           emit('open-gate', gate.component)
         })
       }
 
       if (gate.direction === 'out') {
-        socket.emit('api-gateway:interact', 'gate-out')
+        socket.emit('interact', 'metro-gate-out')
       }
     }
 

@@ -5,7 +5,7 @@
       class="g-input__field"
       :placeholder="placeholder"
       :value="modelValue"
-      @input="$emit('input', $event)"
+      @input="onChange"
     />
   </div>
 </template>
@@ -16,7 +16,7 @@ import { defineComponent, inject, ref, computed } from 'vue'
 export default defineComponent({
   name: 'GInput',
 
-  setup () {
+  setup (_, { emit }) {
     const field = ref(null)
     const theme = inject('theme', 'light')
     const classes = computed(() => ({
@@ -27,10 +27,15 @@ export default defineComponent({
       field.value?.focus()
     }
 
+    const onChange = (event) => {
+      emit('update:modelValue', event.target.value)
+    }
+
     return {
       classes,
       field,
-      focus
+      focus,
+      onChange
     }
   },
 

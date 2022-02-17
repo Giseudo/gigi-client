@@ -151,7 +151,7 @@ export default defineComponent({
     const onPodClick = () => {
       let port = activePort.value
 
-      socket.emit('pod:interact')
+      socket.emit('interact', 'pod')
 
       socket.once('dialogue:start', () => {
         pod.value.moveTo({ y: 0 })
