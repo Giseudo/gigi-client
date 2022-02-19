@@ -1,13 +1,14 @@
 <template>
   <div class="dialogue-message" :class="classes" @click="onMessageClick">
-    <div class="dialogue-message__speaker">
+    <div class="dialogue-message__speaker" v-if="message.speaker">
       <g-text type="subheading">
         {{ message.speaker }}:
       </g-text>
     </div>
 
     <g-text v-typewrite="typewrite"
-      type="body"
+      class="dialogue-message__body"
+      type="dialogue"
     />
   </div>
 </template>
@@ -94,41 +95,57 @@ export default defineComponent({
   padding-bottom: 20px;
   position: relative;
   background-color: white;
-  min-height: 180px;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
 
   &__speaker {
+    margin-bottom: 10px;
     .g-text {
       background: black;
       color: white;
       display: inline-block;
       padding: 0 10px;
     }
+
+    @include responsive(desktop) {
+      .g-text {
+        padding: 5px 15px;
+      }
+    }
   }
 
   @include responsive(desktop) {
-    padding: 20px;
-    padding-bottom: 40px;
+    padding: 30px;
+    padding-bottom: 50px;
   }
 
   &--underscore {
     cursor: pointer;
     &:after {
       content: "_";
-      color: white;
+      color: black;
       font-family: 'Source Code Variable';
       font-weight: 800;
-      font-size: 14px;
+      font-size: 18px;
       animation: underscore;
       animation-duration: 1s;
       animation-iteration-count: infinite;
       animation-timing-function: steps(2, jump-none);
     }
+
+    @include responsive(desktop) {
+      &:after {
+        font-size: 24px;
+      }
+    }
   }
 
   &--dark {
     background-color: rgba(black, .5);
+
+    &:after {
+      color: white;
+    }
 
     .dialogue-message {
       &__speaker {

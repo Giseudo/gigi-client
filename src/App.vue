@@ -5,7 +5,7 @@
 
 <script>
 import { defineComponent } from 'vue'
-import { initWindow, initInput, initDialogue } from '@/store'
+import { initWindow, initInput, initDialogue, initGameplay } from '@/store'
 import { World } from './world'
 import { UI } from './ui'
 
@@ -21,6 +21,7 @@ export default defineComponent({
     initWindow()
     initInput()
     initDialogue()
+    initGameplay()
   }
 })
 </script>

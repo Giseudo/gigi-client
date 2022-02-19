@@ -13,23 +13,29 @@
       :direction="gate.direction"
       @interact="onGateInteract(gate, $event)"
     />
+
+    <RouterPanel
+      :position="{ z: 0 }"
+      @interact="$emit('router-panel', $event)"
+    />
   </Group>
 </template>
 
 <script>
 import { Vector3 } from 'three'
 import { defineComponent, ref, inject } from 'vue'
-import { useNavmesh } from '@/store'
+import { useNavmesh, useCamera } from '@/store'
 import { MetroGate } from '../MetroGate'
+import { RouterPanel } from '../RouterPanel'
 import { metroStationModel } from './'
 import socket from '@/socket'
 
 export default defineComponent({
   name: 'MetroStation',
 
-  emits: [ 'load', 'open-gate' ],
+  emits: [ 'load', 'open-gate', 'router-panel' ],
 
-  components: { MetroGate },
+  components: { MetroGate, RouterPanel },
 
   setup (_, { emit }) {
     const { createZone } = useNavmesh()
@@ -90,7 +96,7 @@ export default defineComponent({
       if (gate.direction === 'in') {
         socket.emit('interact', 'metro-gate-in')
 
-        socket.once('api-gateway:open-gate', () => {
+        socket.once('interaction:end', () => {
           emit('open-gate', gate.component)
         })
       }

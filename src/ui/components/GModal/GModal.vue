@@ -109,8 +109,7 @@ export default defineComponent({
 }
 
 @keyframes modal {
-  0% { transform: scale(0, .01); }
-  50% { transform: scale(1, .01); }
+  0% { transform: scale(1, 0); }
   100% { transform: scale(1, 1); }
 }
 </style>

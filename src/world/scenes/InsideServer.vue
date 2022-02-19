@@ -67,7 +67,7 @@ export default defineComponent({
         easing: 'easeOutQuad',
       })
 
-      pod.value.moveTo({ y: -.5, z: -.75 })
+      pod.value.moveTo({ y: -.3, z: -.75 })
       pod.value.lookAt(camera.value)
 
       if (services.value.length) {
@@ -160,7 +160,7 @@ export default defineComponent({
       })
 
       socket.once('dialogue:end', async () => {
-        pod.value.moveTo({ y: -.5 })
+        pod.value.moveTo({ y: -.3 })
 
         if (!services.value.length) {
           await fetchServices()

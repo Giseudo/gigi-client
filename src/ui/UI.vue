@@ -2,13 +2,14 @@
   <div class="ui">
     <alert class="ui__alert" />
     <dialogue class="ui__dialogue" />
-    <touch-stick v-if="gameplayInput" class="ui__touch-stick" />
+    <touch-stick class="ui__touch-stick" />
   </div>
 </template>
 
 <script>
-import { defineComponent } from 'vue'
-import { useInput } from '@/store'
+import { defineComponent, ref } from 'vue'
+import { useInput, useGame, useGameplay, useInteraction } from '@/store'
+import socket from '@/socket'
 import Alert from './views/Alert/Alert.vue'
 import Dialogue from './views/Dialogue/Dialogue.vue'
 import TouchStick from './views/TouchStick/TouchStick.vue'
@@ -23,9 +24,39 @@ export default defineComponent({
   },
 
   setup () {
-    const { gameplayInput } = useInput()
+    const { buttonDown } = useInput()
+    const { update } = useGame()
+    const { player } = useGameplay()
+    const { interactions } = useInteraction()
+    const isInteracting = ref(false)
+    const currentInteraction = ref(null)
 
-    return { gameplayInput }
+    buttonDown(({ button }) => {
+      if (isInteracting.value) return
+      if (button !== 'confirm') return
+
+      currentInteraction.value?.callback()
+      isInteracting.value = true
+    })
+
+    socket.on('interaction:end', () => isInteracting.value = false)
+
+    update(() => {
+      if (!player.value) return
+
+      const interaction = interactions.value
+        .find(interaction => {
+          const playerPos = player.value.transform.position
+
+          return interaction.transform.position
+            .distanceTo(playerPos) < interaction.radius / 2 
+        })
+
+      if (!interaction)
+        isInteracting.value = false
+
+      currentInteraction.value = interaction
+    })
   }
 })
 </script>

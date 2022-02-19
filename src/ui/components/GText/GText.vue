@@ -61,7 +61,7 @@ export default defineComponent({
     margin-bottom: 10px;
 
     @include responsive(desktop) {
-      font-size: 16px;
+      font-size: 18px;
     }
   }
 
@@ -77,14 +77,14 @@ export default defineComponent({
   }
 
   &--button {
-    font-size: 12px;
+    font-size: 16px;
     font-weight: 800;
     line-height: 18px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
+    letter-spacing: 1px;
 
     @include responsive(desktop) {
-      font-size: 14px;
+      font-size: 18px;
+      font-weight: 700;
       line-height: 24px;
     }
   }
@@ -95,6 +95,17 @@ export default defineComponent({
     line-height: 18px;
     letter-spacing: 3px;
     text-transform: uppercase;
+  }
+
+  &--dialogue {
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 30px;
+
+    @include responsive(desktop) {
+      font-size: 20px;
+      line-height: 40px;
+    }
   }
 
   &--light {

@@ -65,9 +65,17 @@ export default defineComponent({
     padding: 0 15px;
     border: 0;
     font-family: 'Source Code Variable';
-    font-weight: 600;
-    font-size: 13px;
+    font-size: 16px;
+    font-weight: 800;
+    line-height: 18px;
+    letter-spacing: 1px;
     background: transparent;
+
+    @include responsive(desktop) {
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 24px;
+    }
 
     &:focus {
       outline-width: 4px;
@@ -79,12 +87,6 @@ export default defineComponent({
     }
 
     &::placeholder {
-      font-size: 14px;
-      font-weight: 800;
-      line-height: 18px;
-      letter-spacing: 3px;
-      letter-spacing: 1px;
-      text-transform: uppercase;
     }
   }
 

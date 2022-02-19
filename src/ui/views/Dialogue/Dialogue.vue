@@ -47,7 +47,7 @@ export default defineComponent({
     provide('dialogue/activeChoice', activeChoice)
     provide('dialogue/showChoices', showChoices)
     provide('dialogue/showPrompt', showPrompt)
-    provide('theme', computed(() => 'light'))
+    provide('theme', computed(() => 'dark'))
 
     const onMessageConfirm = () => {
       if (startPrompt.value)
@@ -120,7 +120,11 @@ export default defineComponent({
 
   &__choices {
     width: 100%;
-    max-width: 300px;
+    max-width: 350px;
+  }
+
+  &__message {
+    min-height: 220px;
   }
 
   @keyframes underscore {
