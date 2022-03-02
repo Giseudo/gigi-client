@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import { TroisJSVuePlugin } from 'troisjs'
-import UIPlugin from './ui/plugin.js'
+import UIPlugin from './ui/plugin'
+import ProvidersPlugin from './providers/plugin.js'
 import App from './App.vue'
 import router from './router'
 import './styles/fonts.scss'
@@ -20,5 +21,6 @@ Math.TAU = Math.PI * 2
 createApp(App)
   .use(TroisJSVuePlugin)
   .use(router)
+  .use(ProvidersPlugin)
   .use(UIPlugin)
   .mount('#app')

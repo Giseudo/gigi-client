@@ -1,48 +1,63 @@
 <template>
-  <Group ref="transform">
+  <Group ref="root">
     <FbxModel
-      :src="model"
+      :src="userAgentModel"
       @load="onLoad"
     />
+
+    <NavmeshMovement ref="movement" :speed="4" />
+    <PlayerController ref="controller" @move="movement?.move" />
   </Group>
 </template>
 
 <script>
-import { defineComponent, ref, onMounted } from 'vue'
+import { defineComponent, ref, computed, provide } from 'vue'
 import { BlockShaderMaterial } from '@/world/materials'
+import { PlayerController, NavmeshMovement } from '@/world/components'
+import { MeshInjectionKey } from 'troisjs'
+import userAgentModel from './user-agent-model.fbx?url'
 
 export default defineComponent({
   name: 'UserAgent',
 
-  setup () {
-    const transform = ref(null)
-    const material = ref(new BlockShaderMaterial())
+  emits: [ 'load' ],
 
-    onMounted(() => {
-      transform.value = transform.value.group
-    })
-
-    return {
-      transform,
-      material
-    }
+  components: {
+    NavmeshMovement,
+    PlayerController,
   },
 
-  data: () => ({
-    model: import.meta.env.VITE_PUBLIC_URL + '/meshes/player.fbx'
-  }),
+  setup (_, { emit }) {
+    const root = ref(null)
+    const movement = ref(null)
+    const controller = ref(null)
+    const transform = computed(() => root.value?.group)
+    const material = ref(new BlockShaderMaterial())
 
-  methods: {
-    onLoad (mesh) {
+    const onLoad = (mesh) => {
       mesh.traverse(node => {
         if (!node.isMesh) return
 
         node.material.dispose()
-        node.material = this.material
+        node.material = material.value
       })
 
-      this.$emit('load', mesh)
+      emit('load', mesh)
     }
-  }
+
+    const onMove = (direction) => navmesh.value?.move(direction)
+
+    provide(MeshInjectionKey, transform)
+
+    return {
+      root,
+      transform,
+      movement,
+      controller,
+      userAgentModel,
+      onLoad,
+      onMove,
+    }
+  },
 })
 </script>

@@ -3,7 +3,7 @@ import { useInput } from '@/store'
 import socket from '@/socket'
 
 const player = ref(null)
-const isPaused = ref(false)
+const isPaused = ref(true)
 
 const pause = () => isPaused.value = true
 const resume = () => isPaused.value = false

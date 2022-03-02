@@ -3,16 +3,16 @@
     <alert class="ui__alert" />
     <dialogue class="ui__dialogue" />
     <touch-stick class="ui__touch-stick" />
+    <interaction class="ui__interaction" />
   </div>
 </template>
 
 <script>
 import { defineComponent, ref } from 'vue'
-import { useInput, useGame, useGameplay, useInteraction } from '@/store'
-import socket from '@/socket'
 import Alert from './views/Alert/Alert.vue'
 import Dialogue from './views/Dialogue/Dialogue.vue'
 import TouchStick from './views/TouchStick/TouchStick.vue'
+import Interaction from './views/Interaction/Interaction.vue'
 
 export default defineComponent({
   name: 'UI',
@@ -21,9 +21,11 @@ export default defineComponent({
     Alert,
     Dialogue,
     TouchStick,
+    Interaction,
   },
 
   setup () {
+    /*
     const { buttonDown } = useInput()
     const { update } = useGame()
     const { player } = useGameplay()
@@ -42,6 +44,8 @@ export default defineComponent({
     socket.on('interaction:end', () => isInteracting.value = false)
 
     update(() => {
+    */
+      /*
       if (!player.value) return
 
       const interaction = interactions.value
@@ -56,7 +60,8 @@ export default defineComponent({
         isInteracting.value = false
 
       currentInteraction.value = interaction
-    })
+      */
+    //})
   }
 })
 </script>
@@ -75,6 +80,13 @@ export default defineComponent({
       left: 20px;
       right: 20px;
     }
+  }
+
+  &__interaction {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    z-index: 5;
   }
 }
 </style>

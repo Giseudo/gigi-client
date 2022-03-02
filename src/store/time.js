@@ -1,7 +1,11 @@
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, provide, inject } from 'vue'
+import { useGame } from '@/store'
 
 const time = ref(0)
 const deltaTime = ref(0)
+const { renderer } = useGame()
+
+export const DeltaTimeKey = Symbol('deltaTime')
 
 const update = (callback) => {
   const loopCallback = () => callback(time.value, deltaTime.value)
@@ -15,8 +19,8 @@ const updateTime = ({ time: t }) => {
   deltaTime.value = 0.01666
 }
 
-export const initTime = () => {
-  const { renderer } = useGame()
+export const initTime = (renderer) => {
+  provide(DeltaTimeKey, computed(() => deltaTime.value))
 
   onMounted(() => {
     renderer.value.onBeforeRender(updateTime)

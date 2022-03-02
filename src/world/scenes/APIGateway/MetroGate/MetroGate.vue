@@ -1,5 +1,5 @@
 <template>
-  <Group v-bind="$attrs" ref="transform">
+  <Group v-bind="$attrs" ref="root">
     <FbxModel
       :src="metroGateModel"
       @load="onLoadModel"
@@ -17,7 +17,7 @@
 </template>
 
 <script>
-import { defineComponent, onMounted, ref, computed } from 'vue'
+import { defineComponent, ref, computed } from 'vue'
 import { TextureLoader, MeshBasicMaterial, NearestFilter } from 'three'
 import { useInteraction } from '@/store'
 import { metroGateModel } from './'
@@ -35,13 +35,10 @@ export default defineComponent({
   setup (props, { emit }) {
     const { createInteraction } = useInteraction()
 
+    const root = ref(null)
     const model = ref(null)
-    const transform = ref(null)
+    const transform = computed(() => root.value?.group)
     const isOpened = ref(false)
-
-    onMounted(() => {
-      transform.value = transform.value.group
-    })
 
     const onInteract = (moveTo = false) => emit('interact', moveTo)
 
@@ -57,7 +54,7 @@ export default defineComponent({
 
         loadedModel.traverse((node) => {
           if (node.name === 'Gate')
-            transform.value = node
+            root.value = node
 
           if (Array.isArray(node.material)) {
             node.material.forEach((material, index) => {
@@ -106,6 +103,7 @@ export default defineComponent({
     }
 
     return {
+      root,
       transform,
       model,
       metroGateModel,
