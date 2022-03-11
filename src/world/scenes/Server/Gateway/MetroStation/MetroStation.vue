@@ -28,8 +28,7 @@
 
 <script>
 import { Vector3 } from 'three'
-import { defineComponent, ref, inject } from 'vue'
-import { useNavmesh } from '@/store'
+import { defineComponent, ref } from 'vue'
 import { MetroGate } from '../MetroGate'
 import { RouterPanel } from '../RouterPanel'
 import { metroStationModel } from './'
@@ -42,16 +41,13 @@ export default defineComponent({
   components: { MetroGate, RouterPanel },
 
   setup (_, { emit }) {
-    const { createZone } = useNavmesh()
     const transform = ref(null)
-    const isInside = inject('isInside', false)
     const zoneName = 'metro-station'
     const navmesh = ref(null)
 
     const onLoadModel = (model) => {
       model.traverse(node => {
         if (node.name === 'Navmesh') {
-          createZone(zoneName, node.geometry)
           navmesh.value = node
 
           // node.material.transparent = true
@@ -103,13 +99,6 @@ export default defineComponent({
       if (gate.direction === 'out')
         emit('gate-out', gate.component)
     }
-
-    /*
-    const onGateClick = (gate) => moveToAndInteract(
-      gate.transform.position,
-      () => onGateInteract(gate)
-    )
-    */
 
     return {
       transform,

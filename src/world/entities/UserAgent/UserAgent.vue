@@ -15,7 +15,7 @@ import { defineComponent, ref, computed, provide } from 'vue'
 import { BlockShaderMaterial } from '@/world/materials'
 import { PlayerController, NavmeshMovement } from '@/world/components'
 import { MeshInjectionKey } from 'troisjs'
-import userAgentModel from './user-agent-model.fbx?url'
+import userAgentModel from './user-request-model.fbx?url'
 
 export default defineComponent({
   name: 'UserAgent',
@@ -29,6 +29,7 @@ export default defineComponent({
 
   setup (_, { emit }) {
     const root = ref(null)
+    const model = ref(null)
     const movement = ref(null)
     const controller = ref(null)
     const transform = computed(() => root.value?.group)
@@ -45,18 +46,16 @@ export default defineComponent({
       emit('load', mesh)
     }
 
-    const onMove = (direction) => navmesh.value?.move(direction)
-
     provide(MeshInjectionKey, transform)
 
     return {
       root,
+      model,
       transform,
       movement,
       controller,
       userAgentModel,
       onLoad,
-      onMove,
     }
   },
 })

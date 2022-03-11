@@ -2,7 +2,7 @@
   <div class="ui">
     <alert class="ui__alert" />
     <dialogue class="ui__dialogue" />
-    <touch-stick class="ui__touch-stick" />
+    <!--touch-stick class="ui__touch-stick" /-->
     <interaction class="ui__interaction" />
   </div>
 </template>

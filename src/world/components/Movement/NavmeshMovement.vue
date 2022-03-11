@@ -5,10 +5,11 @@
 <script setup>
 import { defineExpose, defineProps, inject } from 'vue'
 import { Vector3 } from 'three'
-import { DeltaTimeKey, useTime } from '@/store'
+import { DeltaTimeKey, useTime, useGameplay } from '@/store'
 import { MeshInjectionKey } from 'troisjs'
 
 const { update } = useTime()
+const { boundaries } = useGameplay()
 
 const props = defineProps({
   speed: {
@@ -35,6 +36,11 @@ update(() => {
 
   newPosition.x += x * deltaTime.value * props.speed
   newPosition.z -= z * deltaTime.value * props.speed
+
+  boundaries.value.clampPoint(
+    newPosition,
+    newPosition,
+  )
 
   clampStep(
     transform.value.position,

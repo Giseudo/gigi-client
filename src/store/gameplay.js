@@ -1,13 +1,19 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { Box3, Vector3 } from 'three'
 import { useInput } from '@/store'
 import socket from '@/socket'
 
+const BOUNDARIES_MIN = new Vector3(-999, -999, -999)
+const BOUNDARIES_MAX = new Vector3( 999,  999,  999)
+
 const player = ref(null)
 const isPaused = ref(true)
+const boundaries = new Box3(BOUNDARIES_MIN, BOUNDARIES_MAX)
 
 const pause = () => isPaused.value = true
 const resume = () => isPaused.value = false
 const setPlayer = (value) => player.value = value
+const resetBoundaries = () => boundaries.set(BOUNDARIES_MIN, BOUNDARIES_MAX)
 
 const inputAxis = ref(null)
 const axis = computed(() => {
@@ -40,6 +46,8 @@ export const initGameplay = () => {
 export const useGameplay = () => ({
   player: computed(() => player.value),
   isPaused: computed(() => isPaused.value),
+  boundaries: computed(() => boundaries),
+  resetBoundaries,
   pause,
   resume,
   axis,

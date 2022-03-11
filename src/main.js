@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import { TroisJSVuePlugin } from 'troisjs'
 import UIPlugin from './ui/plugin'
+import WorldPlugin from './world/plugin'
 import ProvidersPlugin from './providers/plugin.js'
 import App from './App.vue'
 import router from './router'
@@ -23,4 +24,5 @@ createApp(App)
   .use(router)
   .use(ProvidersPlugin)
   .use(UIPlugin)
+  .use(WorldPlugin)
   .mount('#app')
