@@ -1,5 +1,5 @@
 export * from './GButton'
 export * from './GInput'
 export * from './GModal'
-export * from './GTouchStick'
 export * from './GText'
+export * from './GTouchStick'

@@ -8,7 +8,7 @@
 import { defineComponent, inject } from 'vue'
 
 export const TEXT_THEMES = [
-  'heading', 'subheading', 'body', 'button'
+  'heading', 'subheading', 'body', 'button', 'button-jumbo'
 ]
 
 export default defineComponent({
@@ -45,7 +45,7 @@ export default defineComponent({
 
   &--heading {
     display: block;
-    font-size: 32px;
+    font-size: 28px;
     font-weight: 700;
     margin-bottom: 30px;
 
@@ -61,13 +61,13 @@ export default defineComponent({
     margin-bottom: 10px;
 
     @include responsive(desktop) {
-      font-size: 16px;
+      font-size: 18px;
     }
   }
 
   &--body {
     font-size: 12px;
-    font-weight: 400;
+    font-weight: 500;
     line-height: 24px;
     letter-spacing: 1px;
 
@@ -77,14 +77,34 @@ export default defineComponent({
   }
 
   &--button {
-    font-size: 12px;
+    font-size: 16px;
     font-weight: 800;
     line-height: 18px;
     letter-spacing: 1px;
 
     @include responsive(desktop) {
-      font-size: 14px;
+      font-size: 18px;
+      font-weight: 700;
       line-height: 24px;
+    }
+  }
+
+  &--button-jumbo {
+    font-size: 20px;
+    font-weight: 800;
+    line-height: 18px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  &--dialogue {
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 30px;
+
+    @include responsive(desktop) {
+      font-size: 20px;
+      line-height: 40px;
     }
   }
 

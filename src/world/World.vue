@@ -1,6 +1,6 @@
 <template>
   <Renderer ref="renderer" resize="window" >
-    <Camera :fov="80" />
+    <Camera ref="camera" :fov="80" />
     <Scene>
       <RouterView />
     </Scene>
@@ -13,19 +13,23 @@
 
 <script>
 import { defineComponent, onMounted } from 'vue'
-import { initGame } from '@/store'
+import { initGame, initCamera, initTime } from '@/store'
 
 export default defineComponent({
   setup () {
     const { renderer } = initGame()
+    const { camera } = initCamera()
+
+    initTime(renderer)
 
     onMounted(() => {
       // add camera to scene, so its children become visible
       renderer.value.scene.add(renderer.value.camera)
     })
-    
+  
     return {
-      renderer
+      renderer,
+      camera
     }
   }
 })

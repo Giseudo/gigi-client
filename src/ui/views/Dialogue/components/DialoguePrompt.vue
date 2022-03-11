@@ -7,15 +7,7 @@
         v-model="text"
       />
 
-      <!--input ref="input"
-        type="text"
-        class="dialogue-prompt__input dialogue-prompt__input--text"
-        placeholder="Type here"
-        v-model="text"
-      />
-      -->
-
-      <g-button class="dialogue-prompt__confirm">
+      <g-button class="dialogue-prompt__confirm" jumbo>
         Ok
       </g-button>
     </form>
@@ -89,21 +81,12 @@ export default defineComponent({
   }
 
   &__confirm {
-    width: 80px;
+    width: 100px;
     flex-shrink: 0;
     padding: 0;
     border: 0;
     text-align: center;
     display: flex;
-
-    .g-text {
-      text-transform: uppercase;
-      font-family: 'Source Code Variable';
-      font-weight: 800;
-      font-size: 20px;
-      letter-spacing: 5px;
-      text-indent: 5px;
-    }
 
     &:focus { outline: 4px solid orange; }
   }
@@ -117,12 +100,6 @@ export default defineComponent({
     }
     &__confirm {
       width: 120px;
-
-      .g-text {
-        font-size: 24px;
-        letter-spacing: 10px;
-        text-indent: 10px;
-      }
     }
   }
 }

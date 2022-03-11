@@ -5,7 +5,7 @@
 
 <script>
 import { defineComponent } from 'vue'
-import { initWindow, initInput } from '@/store'
+import { initWindow, initInput, initDialogue, initGameplay } from '@/store'
 import { World } from './world'
 import { UI } from './ui'
 
@@ -20,6 +20,8 @@ export default defineComponent({
   setup () {
     initWindow()
     initInput()
+    initDialogue()
+    initGameplay()
   }
 })
 </script>
@@ -31,6 +33,7 @@ html {
 
 *, *:before, *:after {
   box-sizing: inherit;
+  -webkit-tap-highlight-color: rgba(white, .0);
 }
 
 body, html {

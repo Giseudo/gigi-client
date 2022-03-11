@@ -4,9 +4,11 @@ const title = ref('')
 const message = ref('')
 const showAlert = ref(false)
 const confirmText = ref('')
+const cancelText = ref('')
 const confirmCallback = ref(undefined)
 const cancelCallback = ref(undefined)
 const closeCallback = ref(undefined)
+const theme = ref('light')
 
 const openAlert = (params) => {
   const { onConfirm, onCancel, onClose } = params
@@ -14,6 +16,8 @@ const openAlert = (params) => {
   title.value = params.title || 'Alert'
   message.value = params.message
   confirmText.value = params.confirmText || 'Confirm'
+  cancelText.value = params.cancelText || 'Cancel'
+  theme.value = params.dark ? 'dark' : 'light'
 
   confirmCallback.value = onConfirm
   cancelCallback.value = onCancel
@@ -48,6 +52,8 @@ export const useAlert = () => ({
   message: computed(() => message.value),
   showAlert: computed(() => showAlert.value),
   confirmText: computed(() => confirmText.value),
+  cancelText: computed(() => cancelText.value),
+  theme: computed(() => theme.value),
 
   openAlert,
   closeAlert,

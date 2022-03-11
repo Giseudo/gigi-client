@@ -148,7 +148,6 @@ export default defineComponent({
 
   methods: {
     onLoadText (mesh) {
-
       mesh.geometry.computeBoundingBox()
 
       const boundingBox = mesh.geometry.boundingBox

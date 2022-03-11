@@ -1,5 +1,5 @@
 import {
-  GButton, GInput, GModal, GText
+  GButton, GInput, GModal, GText, GTouchStick
 } from './components'
 
 export default {
@@ -8,5 +8,6 @@ export default {
     app.component('GInput', GInput)
     app.component('GModal', GModal)
     app.component('GText', GText)
+    app.component('GTouchStick', GTouchStick)
   }
 }

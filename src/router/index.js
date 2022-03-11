@@ -1,24 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import CloudNetwork from '../world/scenes/CloudNetwork.vue'
-import InsideServer from '../world/scenes/InsideServer.vue'
-import Playground from '../world/scenes/Playground.vue'
+import { worldRoutes } from '../world'
 
 const routes = [
-  {
-    path: '/',
-    name: 'CloudNetwork',
-    component: CloudNetwork,
-  },
-  {
-    path: '/server',
-    name: 'InsideServer',
-    component: InsideServer,
-  },
-  {
-    path: '/playground',
-    name: 'Playground',
-    component: Playground,
-  }
+  ...worldRoutes
 ]
 
 const router = createRouter({

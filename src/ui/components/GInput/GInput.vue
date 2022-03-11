@@ -5,7 +5,7 @@
       class="g-input__field"
       :placeholder="placeholder"
       :value="modelValue"
-      @input="$emit('input', $event)"
+      @input="onChange"
     />
   </div>
 </template>
@@ -16,7 +16,7 @@ import { defineComponent, inject, ref, computed } from 'vue'
 export default defineComponent({
   name: 'GInput',
 
-  setup () {
+  setup (_, { emit }) {
     const field = ref(null)
     const theme = inject('theme', 'light')
     const classes = computed(() => ({
@@ -27,10 +27,15 @@ export default defineComponent({
       field.value?.focus()
     }
 
+    const onChange = (event) => {
+      emit('update:modelValue', event.target.value)
+    }
+
     return {
       classes,
       field,
-      focus
+      focus,
+      onChange
     }
   },
 
@@ -60,12 +65,28 @@ export default defineComponent({
     padding: 0 15px;
     border: 0;
     font-family: 'Source Code Variable';
-    font-weight: 600;
-    font-size: 13px;
+    font-size: 16px;
+    font-weight: 800;
+    line-height: 18px;
+    letter-spacing: 1px;
     background: transparent;
 
+    @include responsive(desktop) {
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 24px;
+    }
+
     &:focus {
-      outline: 4px solid orange;
+      outline-width: 4px;
+      outline-style: solid;
+      outline-offset: 2px;
+      animation-name: selected-outline;
+      animation-duration: 1s;
+      animation-iteration-count: infinite;
+    }
+
+    &::placeholder {
     }
   }
 

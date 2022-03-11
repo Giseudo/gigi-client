@@ -57,7 +57,7 @@
 <script>
 import { defineComponent, defineAsyncComponent, ref, computed } from 'vue'
 import { initServer } from './'
-import { usePointer, useGame, useWindow } from '@/store'
+import { usePointer, useGame, useWindow, useAlert } from '@/store'
 import { Vector3, Color } from 'three'
 import fragmentShader from './ServerFrag.glsl?raw'
 import vertexShader from './ServerVert.glsl?raw'
@@ -78,6 +78,7 @@ export default defineComponent({
     const { pointer, pointerDown, pointerMove, pointerUp } = usePointer()
     const { deltaTime, time } = useGame()
     const { isMobile } = useWindow()
+    const { openAlert } = useAlert()
     const canDrag = ref(false)
     const isDragging = ref(false)
     const delta = { x: 0, y: 0 }
@@ -139,6 +140,7 @@ export default defineComponent({
     })
 
     return {
+      openAlert,
       canDrag,
       isDragging,
       transform,
@@ -189,39 +191,50 @@ export default defineComponent({
 
   methods: {
     onAccessPort (port) {
-      this.setActivePort(port)
+      this.openAlert({
+        title: `PORT: ${port}`,
+        confirmText: 'Access',
+        dark: true,
+        cancel: true,
 
-      if (port === 80) {
-        anime.timeline()
-          .add({
-            targets: this.transform.rotation,
-            x: 0,
-            y: 0,
-            duration: 1000,
-            easing: 'easeOutCubic',
-          })
-          .add({
-            targets: this.transform.rotation,
-            x: Math.radians(45),
-            y: Math.radians(-45),
-            duration: 3000,
-            delay: 1000,
-            easing: 'easeInOutCubic',
-            complete: () => this.$emit('port-access', this.activePort)
-          })
-      }
+        onConfirm: (done) => {
+          this.setActivePort(port)
 
-      if (port === 443) {
-        anime({
-          targets: this.transform.rotation,
-          x: Math.radians(45),
-          y: Math.radians(-45),
-          duration: 1000,
-          easing: 'easeInOutCubic'
-        })
-      }
+          if (port === 80) {
+            anime.timeline()
+              .add({
+                targets: this.transform.rotation,
+                x: 0,
+                y: 0,
+                duration: 1000,
+                easing: 'easeOutCubic',
+              })
+              .add({
+                targets: this.transform.rotation,
+                x: Math.radians(45),
+                y: Math.radians(-45),
+                duration: 3000,
+                delay: 1000,
+                easing: 'easeInOutCubic',
+                complete: () => this.$emit('port-access', this.activePort)
+              })
+          }
 
-      this.$emit('port-access', this.activePort)
+          if (port === 443) {
+            anime({
+              targets: this.transform.rotation,
+              x: Math.radians(45),
+              y: Math.radians(-45),
+              duration: 1000,
+              easing: 'easeInOutCubic'
+            })
+          }
+
+          this.$emit('port-access', this.activePort)
+
+          done()
+        }
+      })
     },
 
     onRedirect () {

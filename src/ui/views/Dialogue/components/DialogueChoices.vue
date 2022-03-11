@@ -65,7 +65,10 @@ export default defineComponent({
     const choose = () => {
       hasChosen.value = true
 
-      setTimeout(() => emit('choose'), 200)
+      setTimeout(() => {
+        emit('choose')
+        hasChosen.value = false
+      }, 200)
     }
 
     const onClick = (index) => {
@@ -128,18 +131,24 @@ export default defineComponent({
     @include responsive(desktop) { margin-bottom: 20px; }
 
     &--selected {
-      outline: 4px solid orange;
+      outline-width: 4px;
+      outline-style: solid;
+      outline-offset: 2px;
+      animation-name: selected-outline;
+      animation-duration: 1s;
+      animation-iteration-count: infinite;
+
       &:before {
         content: "";
         position: absolute;
-        top: 22px;
+        top: 20px;
         left: -35px;
         transition: left .2s ease;
         animation-name: cursor;
         animation-duration: 1s;
         animation-iteration-count: infinite;
-        width: 12px;
-        height: 12px;
+        width: 14px;
+        height: 14px;
         border-right: 4px solid orange;
         border-bottom: 4px solid orange;
         transform: rotateZ(-45deg);
@@ -160,9 +169,15 @@ export default defineComponent({
   }
 
   @keyframes cursor {
-    0% { transform: translateX(0px) rotateZ(-45deg); }
-    50% { transform: translateX(-5px) rotateZ(-45deg); }
-    100% { transform: translateX(0px) rotateZ(-45deg); }
+    0% { transform: translateX(0px) rotateZ(-45deg); border-color: yellow; }
+    50% { transform: translateX(-5px) rotateZ(-45deg); border-color: orange; }
+    100% { transform: translateX(0px) rotateZ(-45deg); border-color: yellow; }
+  }
+
+  @keyframes selected-outline {
+    0% { outline-color: yellow; }
+    50% { outline-color: orange; }
+    100% { outline-color: yellow; }
   }
 }
 </style>

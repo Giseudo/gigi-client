@@ -1,6 +1,6 @@
 <template>
   <button class="g-button" :class="classes" :disabled="disabled">
-    <g-text type="button">
+    <g-text class="g-button__text" :type="jumbo ? 'button-jumbo' : 'button'">
       <slot></slot>
     </g-text>
   </button>
@@ -25,6 +25,7 @@ export default defineComponent({
         'g-button--disabled': props.disabled,
         'g-button--dark': theme.value === 'dark',
         'g-button--outlined': props.outlined,
+        'g-button--filled': props.filled,
       }
     ]))
 
@@ -48,6 +49,16 @@ export default defineComponent({
     outlined: {
       type: Boolean,
       default: false
+    },
+
+    filled: {
+      type: Boolean,
+      default: false
+    },
+
+    jumbo: {
+      type: Boolean,
+      default: false
     }
   },
 })
@@ -66,45 +77,66 @@ export default defineComponent({
   transition: opacity .2s ease, transform .2s ease;
   -webkit-tap-highlight-color: rgba(white, .0);
 
+  &__text {
+    position: relative;
+    z-index: 5;
+  }
+
   &:focus {
-    outline: 4px solid orange;
+    outline-width: 4px;
+    outline-style: solid;
+    outline-offset: 2px;
+    animation-name: selected-outline;
+    animation-duration: 1s;
+    animation-iteration-count: infinite;
   }
 
   @include responsive(desktop) {
     padding: 10px 20px;
   }
 
-  &--outlined {
-    border: 4px solid transparent;
+  &:after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    border: 2px solid transparent;
   }
 
   &--default {
-    background: white;
-    border-color: black;
+    &.g-button {
+      background: rgba(white, 1);
+
+      &--outlined:after {
+        border-color: black;
+      }
+
+      &--filled {
+        .g-button__text { color: white; }
+        &:after { background: black; }
+      }
+    }
 
     &.g-button--dark {
-      background: rgba(black, .5);
-      border-color: white;
+      &.g-button {
+        background: rgba(black, .5);
+
+        &--outlined:after {
+          border-color: white;
+        }
+
+        &--filled {
+          .g-button__text { color: black; }
+          &:after { background: white; }
+        }
+      }
     }
   }
 
-  &--success {
-    &.g-button--dark {
-      color: green;
-      background: rgba(green, .2);
-    }
-  }
-
-  &--warn {
-    background: orange;
-
-    &.g-button--dark { color: orange; }
-  }
-
-  &--error {
-    background: red;
-
-    &.g-button--dark { color: orange; }
-  }
+  &--success { }
+  &--warn { }
+  &--error { }
 }
 </style>

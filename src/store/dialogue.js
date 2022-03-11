@@ -1,37 +1,30 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import socket from '@/socket'
 
-// state
 const message = ref({})
 const showDialogue = ref(false)
 
-// getters
-const getMessage = computed(() => message.value)
-const getShowDialogue = computed(() => showDialogue.value)
-
-// mutations
 const setMessage = value => message.value = value
 const openDialogue = () => showDialogue.value = true
 const closeDialogue = () => showDialogue.value = false
 
-// actions
 const continueDialogue = (index = 0) => {
   socket.emit('dialogue:choose', index)
 }
 
+const onDialogueChange = (message) => {
+  if (!message)
+    return closeDialogue()
+
+  if (!showDialogue.value)
+    openDialogue()
+
+  setMessage(message)
+}
+
+const onDialogueEnd = () => onDialogueChange(false)
+
 export const initDialogue = () => {
-  const onDialogueChange = (message) => {
-    if (!message)
-      return closeDialogue()
-
-    if (!showDialogue.value)
-      openDialogue()
-
-    setMessage(message)
-  }
-
-  const onDialogueEnd = () => onDialogueChange(false)
-
   onMounted(() => {
     socket.on('dialogue:start', onDialogueChange)
     socket.on('dialogue:next', onDialogueChange)
@@ -46,8 +39,8 @@ export const initDialogue = () => {
 }
 
 export const useDialogue = () => ({
-  message: getMessage,
-  showDialogue: getShowDialogue,
+  message: computed(() => message.value),
+  showDialogue: computed(() => showDialogue.value),
   choices: computed(() => message.value.choices || []),
 
   openDialogue,

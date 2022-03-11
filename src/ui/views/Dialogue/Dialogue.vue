@@ -120,7 +120,11 @@ export default defineComponent({
 
   &__choices {
     width: 100%;
-    max-width: 300px;
+    max-width: 350px;
+  }
+
+  &__message {
+    min-height: 220px;
   }
 
   @keyframes underscore {
