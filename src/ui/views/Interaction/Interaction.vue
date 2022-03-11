@@ -22,6 +22,7 @@ const showInteraction = computed(() => !isPaused.value && !!closestInteraction.v
 
 update(() => {
   if (isPaused.value) return
+  if (!player.value) return
 
   const playerPos = player.value.transform.position
 

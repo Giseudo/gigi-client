@@ -70,9 +70,7 @@ const onPlayerLoad = () => {
   )
   setPlayer(userAgent.value)
   resume()
-  console.log('hm')
 }
-  console.log('q')
 
 const onEnterGate = (gate) => {
   if (isInside.value) return
