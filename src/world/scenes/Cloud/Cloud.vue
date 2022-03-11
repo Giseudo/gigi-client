@@ -7,7 +7,7 @@ import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Vector3 } from 'three'
 import { useGame, useWindow } from '@/store'
-import { Server } from '@/world/entities/Server'
+import { Server } from './Server'
 import anime from 'animejs'
 
 const { camera } = useGame()
