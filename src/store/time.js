@@ -1,4 +1,4 @@
-import { ref, computed, onMounted, onBeforeUnmount, provide, inject } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, provide } from 'vue'
 import { useGame } from '@/store'
 
 const time = ref(0)

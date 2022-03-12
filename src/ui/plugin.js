@@ -3,7 +3,7 @@ import {
 } from './components'
 
 export default {
-  install: (app, options) => {
+  install: (app) => {
     app.component('GButton', GButton)
     app.component('GInput', GInput)
     app.component('GModal', GModal)

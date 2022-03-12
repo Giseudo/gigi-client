@@ -24,7 +24,7 @@
 </template>
 
 <script>
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { usePointer } from '@/store'
 import { Vector2 } from 'three'
 

@@ -1,5 +1,5 @@
 <template>
-  <Server :radius="4" @port-access="onAccessPort" />
+  <Server :radius="10" @port-access="onAccessPort" />
 </template>
 
 <script setup>
