@@ -19,6 +19,7 @@ import socket from '@/socket'
 const { camera } = useGame()
 const router = useRouter()
 const pod = ref(null)
+const podIsTalking = ref(false)
 const { isInsideServer } = useServerStore()
 
 provide('pod', computed(() => pod.value))
@@ -39,13 +40,17 @@ onBeforeUnmount(() => {
 })
 
 const onPodClick = () => {
+  if (podIsTalking.value) return
+
   socket.emit('interact', 'pod')
 
   socket.once('dialogue:start', () => {
+    podIsTalking.value = true
     pod.value.moveTo({ y: 0 })
   })
 
   socket.once('dialogue:end', async () => {
+    podIsTalking.value = false
     pod.value.moveTo({ y: -.3 })
     router.push({ name: 'ServerGateway' })
   })
