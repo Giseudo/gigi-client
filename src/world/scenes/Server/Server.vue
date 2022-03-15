@@ -1,5 +1,5 @@
 <template>
-  <Sphere :scale="{ x: 50, y: 50, z: 50 }">
+  <Sphere :scale="{ x: 300, y: 300, z: 300 }">
     <SkyboxMaterial />
   </Sphere>
 
@@ -9,17 +9,24 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, computed, provide } from 'vue'
 import { Pod } from '@/world/entities'
 import { useGame } from '@/store'
 import { useRouter } from 'vue-router'
+import { useServerStore } from './serverStore'
 import socket from '@/socket'
 
 const { camera } = useGame()
 const router = useRouter()
 const pod = ref(null)
+const { isInsideServer } = useServerStore()
+
+provide('pod', computed(() => pod.value))
 
 onMounted(async () => {
+  camera.value.position.y = isInsideServer.value ? 3 : 0
+  camera.value.position.z = isInsideServer.value ? 8 : 300
+
   camera.value.attach(pod.value.transform)
 
   pod.value.moveTo({ y: -.3, z: -.75 })

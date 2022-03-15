@@ -1,29 +1,20 @@
 <template>
   <div class="ui">
-    <alert class="ui__alert" />
+    <alerts class="ui__alert" />
     <dialogue class="ui__dialogue" />
-    <!--touch-stick class="ui__touch-stick" /-->
+    <touch-stick class="ui__touch-stick" v-if="player && !isPaused" />
     <interaction class="ui__interaction" />
   </div>
 </template>
 
-<script>
-import { defineComponent } from 'vue'
-import Alert from './views/Alert/Alert.vue'
+<script setup>
+import Alerts from './views/Alert/Alert.vue'
 import Dialogue from './views/Dialogue/Dialogue.vue'
 import TouchStick from './views/TouchStick/TouchStick.vue'
 import Interaction from './views/Interaction/Interaction.vue'
+import { useGameplay } from '@/store'
 
-export default defineComponent({
-  name: 'UI',
-
-  components: {
-    Alert,
-    Dialogue,
-    TouchStick,
-    Interaction,
-  }
-})
+const { player, isPaused } = useGameplay()
 </script>
 
 <style lang="scss">

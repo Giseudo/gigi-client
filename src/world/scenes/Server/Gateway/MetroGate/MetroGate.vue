@@ -19,6 +19,7 @@
 <script>
 import { defineComponent, ref, computed } from 'vue'
 import { TextureLoader, MeshBasicMaterial, NearestFilter } from 'three'
+import { BlockShaderMaterial } from '@/world/materials'
 import { useInteraction } from '@/store'
 import { metroGateModel } from './'
 import metroGatePanelIn from './metro-gate-panel-in.png?url'
@@ -39,6 +40,7 @@ export default defineComponent({
     const model = ref(null)
     const transform = computed(() => root.value?.group)
     const isOpened = ref(false)
+    const blockMaterial = new BlockShaderMaterial({ color: '#363638' })
 
     const onInteract = (moveTo = false) => emit('interact', moveTo)
 
@@ -56,13 +58,26 @@ export default defineComponent({
           if (node.name === 'Gate')
             root.value = node
 
-          if (Array.isArray(node.material)) {
-            node.material.forEach((material, index) => {
-              if (material.name === 'MetroGate')
-                node.material[index] = new MeshBasicMaterial({
-                  map: texture
-                })
-            })
+          if (node.type === 'Mesh') {
+            if (Array.isArray(node.material)) {
+              node.material.forEach((material, index) => {
+                if (material.name === 'MetroGate') {
+                  node.material[index] = new MeshBasicMaterial({
+                    map: texture
+                  })
+
+                  return
+                }
+
+                node.material[index].dispose()
+                node.material[index] = blockMaterial
+              })
+
+              return
+            }
+
+            node.material.dispose()
+            node.material = blockMaterial
           }
         })
       })
