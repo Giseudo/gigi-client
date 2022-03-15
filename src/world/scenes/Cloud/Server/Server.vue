@@ -92,7 +92,7 @@ export default defineComponent({
       },
     }
 
-    const speed = computed(() => isMobile ? .05 : .2)
+    const speed = computed(() => isMobile ? .15 : .5)
 
     pointerDown(() => {
       if (!canDrag.value) return

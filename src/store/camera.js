@@ -24,14 +24,14 @@ const setFollowOffset = ({ x = 0, y = 0, z = 0 }) =>
   followOffset.set(x, y, z)
 
 const cameraFollow = (target, offset, speed) => {
-  setFollowOffset(offset)
+  setFollowOffset(offset || {})
   setFollowTarget(target)
 
   if (speed) setFollowSpeed(speed)
 }
 
 const cameraLookAt = (target, offset, speed) => {
-  setLookAtOffset(offset)
+  setLookAtOffset(offset || {})
   setLookAtTarget(target)
 
   if (speed) setLookAtSpeed(speed)

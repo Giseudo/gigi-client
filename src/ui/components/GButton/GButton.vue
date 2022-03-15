@@ -75,6 +75,7 @@ export default defineComponent({
   text-align: left;
   cursor: pointer;
   transition: opacity .2s ease, transform .2s ease;
+  pointer-events: initial;
   -webkit-tap-highlight-color: rgba(white, .0);
 
   &__text {

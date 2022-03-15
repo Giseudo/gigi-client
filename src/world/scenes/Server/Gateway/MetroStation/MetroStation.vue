@@ -17,7 +17,8 @@
 
     <RouterPanel
       :position="{ z: 0 }"
-      @interact="$emit('router-panel', $event)"
+      @interact="$emit('router-panel:start', $event)"
+      @close="$emit('router-panel:end')"
     />
 
     <NavmeshProvider v-if="navmesh" :mesh="navmesh" zone="metro-station">
@@ -32,11 +33,12 @@ import { defineComponent, ref } from 'vue'
 import { MetroGate } from '../MetroGate'
 import { RouterPanel } from '../RouterPanel'
 import { metroStationModel } from './'
+import { BlockShaderMaterial } from '@/world/materials'
 
 export default defineComponent({
   name: 'MetroStation',
 
-  emits: [ 'load', 'gate-in', 'gate-out', 'router-panel' ],
+  emits: [ 'load', 'gate-in', 'gate-out', 'router-panel:start', 'router-panel:end' ],
 
   components: { MetroGate, RouterPanel },
 
@@ -44,18 +46,32 @@ export default defineComponent({
     const transform = ref(null)
     const zoneName = 'metro-station'
     const navmesh = ref(null)
+    const material = new BlockShaderMaterial({ color: '#01032e' })
+    const panelMaterial = new BlockShaderMaterial({ color: '#363638' })
 
     const onLoadModel = (model) => {
       model.traverse(node => {
-        if (node.name === 'Navmesh') {
-          navmesh.value = node
+        if (node.type === 'Mesh') {
+          if (node.name === 'Plane') return
 
-          // node.material.transparent = true
-          // node.material.opacity = 0
+          if (node.name === 'Navmesh') {
+            navmesh.value = node
+
+            node.material.transparent = true
+            node.material.opacity = 0
+
+            return
+          }
+
+          if ([ 'Panel', 'Cylinder' ].includes(node.name)) {
+            node.material = panelMaterial
+
+            return
+          }
+
+          node.material.dispose()
+          node.material = material
         }
-
-        if (node.type === 'Mesh')
-          node.material.shininess = 0
 
         if (node.type === 'PointLight')
           node.intensity = .25

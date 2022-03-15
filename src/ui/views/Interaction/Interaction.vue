@@ -1,7 +1,7 @@
 <template>
   <div class="interaction" v-if="showInteraction">
     <theme-provider theme="light">
-      <g-button class="interaction__button">
+      <g-button class="interaction__button" @click="onInteract">
         {{ closestInteraction?.actionName }}
       </g-button>
     </theme-provider>
@@ -40,6 +40,10 @@ buttonDown(({ button }) => {
 
   closestInteraction.value?.callback()
 })
+
+const onInteract = () => {
+  closestInteraction.value?.callback()
+}
 </script>
 
 <style lang="scss">
@@ -49,6 +53,11 @@ buttonDown(({ button }) => {
   display: flex;
   align-items: center;
   justify-content: center;
+  pointer-events: none;
+
+  @include responsive(mobile) {
+    height: 100px;
+  }
 
   &__circle {
     position: relative;
@@ -67,6 +76,11 @@ buttonDown(({ button }) => {
       transform: translate(-50%, -50%);
       border: 2px solid white;
     }
+  }
+
+  &__button {
+    width: 200px;
+    text-transform: uppercase;
   }
 }
 </style>

@@ -2,35 +2,36 @@
   <MetroStation ref="metroStation"
     @gate-in="onEnterGate"
     @gate-out="onExitGate"
-    @router-panel="onRouterInteract"
+    @router-panel:start="onRouterInteract"
+    @router-panel:end="onRouterInteractEnd"
   >
-    <UserAgent ref="userAgent"
-      :position="{ z: 12 }"
+    <UserAgent ref="userAgent" v-if="true"
+      :position="userPosition"
       @load="onPlayerLoad"
     />
   </MetroStation>
 </template>
 
 <script setup>
-import { onBeforeUnmount, ref, provide } from 'vue'
-import { useGame, useCamera, useGameplay } from '@/store'
+import { onBeforeUnmount, ref, inject } from 'vue'
+import { useCamera, useGameplay } from '@/store'
 import { Vector3 } from 'three'
 import { MetroStation } from './'
 import { UserAgent } from '@/world/entities'
+import { useServerStore } from '../serverStore'
 import socket from '@/socket'
 import anime from 'animejs'
 
-const { camera } = useGame()
 const { pause, resume, setPlayer, boundaries, resetBoundaries } = useGameplay()
 const { cameraFollow, cameraLookAt } = useCamera()
+const { isInsideServer, enterServer } = useServerStore()
+const pod = inject('pod')
 const userAgent = ref(null)
 const metroStation = ref(null)
-const isInside = ref(false)
-
-provide('isInside', isInside)
+const userPosition = isInsideServer.value ? { x: 0, y: 0, z: 4 } : { x: 0, y: 5, z: 55 }
 
 const openGate = (gate) => {
-  isInside.value = true
+  enterServer()
   pause()
 
   anime({
@@ -43,10 +44,7 @@ const openGate = (gate) => {
       gate.open()
     },
     complete: () => {
-      boundaries.value.set(
-        new Vector3(-6, -100, -100),
-        new Vector3( 6,  100,  7.5)
-      )
+      updateBoundaries()
       gate.close()
       resume()
     }
@@ -54,40 +52,43 @@ const openGate = (gate) => {
 }
 
 const onPlayerLoad = () => {
-  camera.value.position.y = 3
-  camera.value.position.z = 8
+  cameraFollow(userAgent.value.transform, { y: 2, z: 3 }, 8)
+  cameraLookAt(userAgent.value.transform, { y: 1, z: -.75 }, 8)
 
-  cameraFollow(userAgent.value.transform, { y: 2, z: 3 })
-  cameraLookAt(userAgent.value.transform, { y: 1 })
+  pod.value.moveTo({ y: -1 })
 
-  isInside.value = userAgent.value.transform.position.z < 8.5
-
-  boundaries.value.set(
-    new Vector3(-10, -100, 8.5),
-    new Vector3( 10,  100, 100)
-    // new Vector3(-6, -100, -100),
-    // new Vector3( 6,  100,  7.5)
-  )
+  updateBoundaries()
   setPlayer(userAgent.value)
   resume()
 }
 
+const updateBoundaries = () => {
+  const min = isInsideServer.value ? new Vector3(-6, -100, -100) : new Vector3(-10, -100, 8.5)
+  const max = isInsideServer.value ? new Vector3( 6,  100,  7.5) : new Vector3( 10,  100, 100)
+
+  boundaries.value.set(min, max)
+}
+
 const onEnterGate = (gate) => {
-  if (isInside.value) return
+  if (isInsideServer.value) return
 
   socket.emit('interact', 'metro-gate-in')
   socket.once('interaction:end', () => openGate(gate))
 }
 
 const onExitGate = () => {
-  if (isInside.value) return
+  if (isInsideServer.value) return
 
   socket.emit('interact', 'metro-gate-out')
 }
 
 onBeforeUnmount(() => {
   setPlayer(null)
+  cameraFollow(null)
+  cameraLookAt(null)
   resetBoundaries()
+
+  pod.value.moveTo({ y: -.3, z: -.75 })
 })
 
 const onRouterInteract = (transform) => {
@@ -95,5 +96,12 @@ const onRouterInteract = (transform) => {
 
   cameraFollow(transform, { y: 1, z: 1 }, 1)
   cameraLookAt(transform, { y: 1 }, 1)
+}
+
+const onRouterInteractEnd = () => {
+  resume()
+
+  cameraFollow(userAgent.value.transform, { y: 2, z: 3 }, 8)
+  cameraLookAt(userAgent.value.transform, { y: 1, z: -.75 }, 8)
 }
 </script>
