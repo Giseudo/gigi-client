@@ -3,18 +3,19 @@
 </template>
 
 <script setup>
-import { defineProps, onMounted, provide } from 'vue'
+import { defineProps, onMounted, ref, provide } from 'vue'
 import { Pathfinding } from 'three-pathfinding'
 
 const NAVMESH_CLAMP_STEP = 'navmesh/clampStep'
+const NAVMESH_FIND_PATH = 'navmesh/findPath'
 
 const props = defineProps({
   mesh: Object,
   zone: String
 })
 
-let previousNode = null
 const pathfinding = new Pathfinding()
+const previousNode = ref(null)
 
 onMounted (() => {
   const createZone = (name, geometry) => {
@@ -31,12 +32,16 @@ const clampStep = (position, newPosition) => {
 
   if (group === null) return
 
-  const node = pathfinding.getClosestNode(newPosition, props.zone, group, true)
-    || previousNode
+  const node = pathfinding.getClosestNode(
+    newPosition,
+    props.zone,
+    group,
+    true
+  ) || previousNode.value
 
   if (node === null) return
 
-  previousNode = pathfinding.clampStep(
+  previousNode.value = pathfinding.clampStep(
     position.clone(),
     newPosition,
     node,
@@ -46,5 +51,21 @@ const clampStep = (position, newPosition) => {
   )
 }
 
+const findPath = (position, targetPosition) => {
+  const group = pathfinding.getGroup(props.zone, targetPosition)
+
+  if (group === null) return
+
+  const path = pathfinding.findPath(
+    position,
+    targetPosition,
+    props.zone,
+    group
+  )
+
+  return path
+}
+
 provide(NAVMESH_CLAMP_STEP, clampStep)
+provide(NAVMESH_FIND_PATH, findPath)
 </script>

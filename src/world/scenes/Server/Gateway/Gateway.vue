@@ -59,6 +59,7 @@ const onPlayerLoad = () => {
 
   updateBoundaries()
   setPlayer(userAgent.value)
+
   resume()
 }
 
