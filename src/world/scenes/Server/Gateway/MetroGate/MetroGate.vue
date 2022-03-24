@@ -7,7 +7,6 @@
     <Box
       :scale="{ x: 1, y : .5, z: 1 }"
       :position="{ x: .4, y: .25, z: .1 }"
-      @click="onInteract(true)"
     >
       <BasicMaterial
         :props="{ transparent: true, opacity: 0 }"
@@ -43,6 +42,8 @@ export default defineComponent({
     const blockMaterial = new BlockShaderMaterial({ color: '#363638' })
 
     const onInteract = (moveTo = false) => emit('interact', moveTo)
+
+    createInteraction('metro-gate', 'Access', transform, 2, onInteract)
 
     const onLoadModel = async (loadedModel) => {
       const loader = new TextureLoader()
@@ -82,9 +83,7 @@ export default defineComponent({
         })
       })
     }
-
-    createInteraction('metro-gate', 'Access', transform, 2, onInteract)
-    
+  
     const doors = computed(() =>
       model.value?.children.filter(node =>
         [ 'MetroGateDoor_L', 'MetroGateDoor_R' ].includes(node.name)

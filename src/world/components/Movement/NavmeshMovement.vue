@@ -3,7 +3,7 @@
 </template>
 
 <script setup>
-import { defineExpose, defineProps, inject } from 'vue'
+import { defineExpose, defineProps, inject, ref } from 'vue'
 import { Vector3 } from 'three'
 import { DeltaTimeKey, useTime, useGameplay } from '@/store'
 import { MeshInjectionKey } from 'troisjs'
@@ -20,13 +20,22 @@ const props = defineProps({
 
 const transform = inject(MeshInjectionKey)
 const clampStep = inject('navmesh/clampStep')
+const findPath = inject('navmesh/findPath')
 const deltaTime = inject(DeltaTimeKey)
 const direction = new Vector3()
 const smoothDirection = new Vector3()
+const path = ref([])
 
 const move = ({ x, y }) => direction.set(x, 0, y)
+const moveTo = (position) => {
+  path.value = findPath(transform.value.position, position)
+
+  return path
+}
 
 update(() => {
+  if (path.value.length) followPath()
+
   const { x, z } = direction
 
   if (x === 0 && z === 0) return
@@ -62,8 +71,26 @@ update(() => {
   transform.value.lookAt(smoothDirection)
 })
 
+const followPath = () => {
+  if (!path.value.length) return
+
+  const [ nextPosition ] = path.value
+
+  if (transform.value.position.distanceTo(nextPosition) > .5)
+    return direction.copy(transform.value.position)
+      .sub(nextPosition)
+      .setY(0)
+      .normalize()
+      .setX(direction.x * -1)
+
+  path.value.shift()
+
+  if (!path.value.length)
+    direction.set(0, 0, 0)
+}
 
 defineExpose({
-  move
+  move,
+  moveTo
 })
 </script>
