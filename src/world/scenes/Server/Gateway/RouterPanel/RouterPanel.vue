@@ -22,7 +22,7 @@
       </Plane>
     </Group>
 
-    <Teleport to="body" v-if="isInteracting">
+    <Teleport to="body #app" v-if="isInteracting">
       <ThemeProvider theme="dark">
         <div class="router-panel">
           <GButton class="router-panel__close" jumbo @click="onClose">X</GButton>

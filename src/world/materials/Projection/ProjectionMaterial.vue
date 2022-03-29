@@ -32,7 +32,7 @@ export default defineComponent({
         premultipliedAlpha: true,
         uniforms: {
           uTime: time,
-          uFade: { value: 1. },
+          uFade: { value: 0. },
           uBaseColor: { value: new Color(props.color) }
         }
       }

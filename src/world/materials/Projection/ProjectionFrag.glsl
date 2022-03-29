@@ -20,14 +20,15 @@ void main() {
   vec2 offset = vec2(scannoise * scanline, 0.0);
 
   vec2 uv = fract(vUv + offset);
-  vec3 baseColor = texture2D(uMainTex, uv).xyz;
+  vec4 texColor = texture2D(uMainTex, uv);
+  vec3 baseColor = texColor.xyz;
 
   baseColor -= sin(uTime * 100. + fract(vUv.y * 2.)) * .02;
   baseColor -= scanline * .02;
 
   vec2 center = vec2(.5, .75);
   float vignet = 1. - distance(vUv, center);
-  float alpha = 1.;
+  float alpha = texColor.a;
 
   if (uv.x > .99 || uv.x < .01) alpha = 0.;
   baseColor *= alpha;
