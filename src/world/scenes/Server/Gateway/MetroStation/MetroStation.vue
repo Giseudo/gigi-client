@@ -15,8 +15,18 @@
       @click="onGateClick(gate)"
     />
 
+    <WarningSign
+      :position="{ x: -8, y: 1, z: -1.5 }"
+      :rotation="{ y: Math.PI / 2 }"
+    />
+
+    <WarningSign
+      :position="{ x: 8, y: 1, z: -1.5 }"
+      :rotation="{ y: -Math.PI / 2 }"
+    />
+
     <RouterPanel
-      :position="{ z: 0 }"
+      :position="{ z: -8.5 }"
       @interact="$emit('router-panel:start', $event)"
       @close="$emit('router-panel:end')"
     />
@@ -32,15 +42,16 @@ import { Vector3 } from 'three'
 import { defineComponent, ref } from 'vue'
 import { MetroGate } from '../MetroGate'
 import { RouterPanel } from '../RouterPanel'
+import { WarningSign } from '../WarningSign'
 import { metroStationModel } from './'
-import { BlockShaderMaterial } from '@/world/materials'
+import { BlockShaderMaterial, StripesShaderMaterial } from '@/world/materials'
 
 export default defineComponent({
   name: 'MetroStation',
 
   emits: [ 'load', 'gate-in', 'gate-out', 'router-panel:start', 'router-panel:end' ],
 
-  components: { MetroGate, RouterPanel },
+  components: { MetroGate, RouterPanel, WarningSign },
 
   setup (_, { emit }) {
     const transform = ref(null)
@@ -48,11 +59,17 @@ export default defineComponent({
     const navmesh = ref(null)
     const material = new BlockShaderMaterial({ color: '#01032e' })
     const panelMaterial = new BlockShaderMaterial({ color: '#363638' })
+    const stripesMaterial = new StripesShaderMaterial({ margin: .25, color: 0xffbb00, fade: 1 })
 
     const onLoadModel = (model) => {
       model.traverse(node => {
         if (node.type === 'Mesh') {
-          if (node.name === 'Plane') return
+          if (node.name === 'Plane') {
+            node.material.dispose()
+            node.material = stripesMaterial
+
+            return
+          }
 
           if (node.name === 'Navmesh') {
             navmesh.value = node
@@ -123,7 +140,7 @@ export default defineComponent({
       onGateInteract,
       zoneName,
       gates,
-      navmesh
+      navmesh,
     }
   },
 
