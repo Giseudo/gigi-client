@@ -16,12 +16,12 @@
     />
 
     <WarningSign
-      :position="{ x: -8, y: 1, z: -1.5 }"
+      :position="{ x: -6, y: 1, z: -1.5 }"
       :rotation="{ y: Math.PI / 2 }"
     />
 
     <WarningSign
-      :position="{ x: 8, y: 1, z: -1.5 }"
+      :position="{ x: 6, y: 1, z: -1.5 }"
       :rotation="{ y: -Math.PI / 2 }"
     />
 

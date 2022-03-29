@@ -22,7 +22,7 @@ void main() {
 
   alpha *= stripes;
   alpha -= flickering;
-  alpha *= fade;
+  // alpha *= fade;
 
   gl_FragColor = vec4(uColor, alpha);
 }

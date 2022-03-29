@@ -72,17 +72,17 @@ const routes = ref([
     thumbnail: thumbnail01,
   },
   {
-    path: '/api/messenger',
+    path: '/api/users',
     port: 7000,
     thumbnail: thumbnail02,
   },
   {
-    path: '/api/playground',
+    path: '/api/posts',
     port: 5000,
     thumbnail: thumbnail03,
   },
   {
-    path: '/api/legacy',
+    path: '/api/mailing',
     port: 9000,
     thumbnail: thumbnail03,
   }
@@ -251,8 +251,9 @@ onMounted(() => {
 
   routes.value.forEach(({ component }) => {
     const { up } = component.transform
+    const lookAtPosition = transform.value.position.clone().add(center)
 
-    component.transform.lookAt(center)
+    component.transform.lookAt(lookAtPosition)
     component.transform.rotateOnAxis(up, Math.PI)
   })
 })

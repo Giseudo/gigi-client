@@ -52,7 +52,7 @@ const openGate = (gate) => {
 }
 
 const onPlayerLoad = () => {
-  cameraFollow(userAgent.value.transform, { y: 3, z: 2 }, 8)
+  cameraFollow(userAgent.value.transform, { y: 2, z: 2 }, 8)
   cameraLookAt(userAgent.value.transform, { y: 1, z: -.75 }, 8)
 
   pod.value.moveTo({ y: -1 })
@@ -64,8 +64,8 @@ const onPlayerLoad = () => {
 }
 
 const updateBoundaries = () => {
-  const min = isInsideServer.value ? new Vector3(-7, -100, -100) : new Vector3(-10, -100, 8.5)
-  const max = isInsideServer.value ? new Vector3( 7,  100,  7.5) : new Vector3( 10,  100, 100)
+  const min = isInsideServer.value ? new Vector3(-5.5, -100, -100) : new Vector3(-10, -100, 8.5)
+  const max = isInsideServer.value ? new Vector3( 5.5,  100,  7.5) : new Vector3( 10,  100, 100)
 
   boundaries.value.set(min, max)
 }
